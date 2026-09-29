@@ -1,0 +1,9 @@
+Khí Máu Android v1.1.1
+Application ID: com.medipharm.abgsuite
+Version code: 3
+Version name: 1.1.1
+Web source target: MEDIPHARM ABG Suite v6.2.8
+Primary fix: native login opens the embedded Medipharm membership form directly; it no longer navigates to ?access=member.
+Menu contract: Android webapp hides "Về Trang chủ" and does not show the PWA install action.
+Update flow: unchanged; versioned APKs on GitHub are compared semantically.
+Signing certificate SHA-256: 2beb71a576fd79dced9d475ce0e63f002707eb5912988ebeceac3533ca9b3f4a
