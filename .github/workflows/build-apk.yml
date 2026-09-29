@@ -22,10 +22,11 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Build offline SQLite payload
+      - name: Restore offline SQLite payload
         run: |
           mkdir -p app/src/main/assets out
-          python3 tools/build_offline_db.py             --url "https://www.sachyhoc.com/phan-tich-khi-mau-app/"             --output app/src/main/assets/abg_offline.db
+          base64 -d offline/abg_offline_v120.db.xz.b64 | xz -dc > app/src/main/assets/abg_offline.db
+          echo "5713a54af984c21e358bb824f20e21a994aa1de354f99e56d6d886e8baa064fe  app/src/main/assets/abg_offline.db" | sha256sum -c -
           sha256sum app/src/main/assets/abg_offline.db | tee out/abg_offline.db.sha256
           cp app/src/main/assets/abg_offline.db out/abg_offline.db
 
@@ -43,8 +44,11 @@ jobs:
           VERSION_NAME=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" app/build.gradle | head -n1)
           test -n "$VERSION_NAME"
           gradle --no-daemon assembleRelease
-          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -p -f 4             app/build/outputs/apk/release/app-release-unsigned.apk             "out/MEDIPHARM-ABG-v${VERSION_NAME}-aligned-unsigned.apk"
-          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -v 4             "out/MEDIPHARM-ABG-v${VERSION_NAME}-aligned-unsigned.apk"
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -p -f 4 \
+            app/build/outputs/apk/release/app-release-unsigned.apk \
+            "out/MEDIPHARM-ABG-v${VERSION_NAME}-aligned-unsigned.apk"
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -v 4 \
+            "out/MEDIPHARM-ABG-v${VERSION_NAME}-aligned-unsigned.apk"
 
       - name: Collect signing tool
         run: |
