@@ -172,7 +172,7 @@ public final class MainActivity extends Activity {
         String action = uri.getHost() == null ? "" : uri.getHost().toLowerCase(Locale.ROOT);
         switch (action) {
             case "login":
-                beginAuthFlow(START_URL + "?access=member");
+                beginLoginFlow();
                 return true;
             case "register":
                 beginAuthFlow(REGISTER_URL);
@@ -183,6 +183,26 @@ public final class MainActivity extends Activity {
             default:
                 return true;
         }
+    }
+
+    private void beginLoginFlow() {
+        authFlowActive = true;
+        startAuthCookiePolling();
+        String script = "(function(){try{" +
+                "if(typeof window.MEDIPHARMABGOpenLogin==='function'){window.MEDIPHARMABGOpenLogin();return 'hook';}" +
+                "var b=document.querySelector('[data-abg-login-open]');" +
+                "if(b){b.click();return 'button';}" +
+                "return 'missing';" +
+                "}catch(e){return 'error';}})();";
+        webView.evaluateJavascript(script, result -> {
+            if ("\"missing\"".equals(result) || "\"error\"".equals(result) || "null".equals(result)) {
+                authFlowActive = false;
+                mainHandler.removeCallbacks(authCookiePoll);
+                Toast.makeText(MainActivity.this,
+                        "Chưa mở được form đăng nhập. Hãy cập nhật Webapp và thử lại.",
+                        Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void beginAuthFlow(String url) {
