@@ -31,16 +31,16 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Build unsigned release APK
-        run: gradle --no-daemon assembleRelease
-
-      - name: Collect signing tools
+      - name: Build and align release APK
         run: |
+          gradle --no-daemon assembleRelease
           mkdir -p out
-          cp app/build/outputs/apk/release/app-release-unsigned.apk out/MEDIPHARM-ABG-v1.0.0-unsigned.apk
-          cp "$ANDROID_HOME/build-tools/35.0.0/zipalign" out/zipalign
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -p -f 4             app/build/outputs/apk/release/app-release-unsigned.apk             out/MEDIPHARM-ABG-v1.0.0-aligned-unsigned.apk
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -v 4             out/MEDIPHARM-ABG-v1.0.0-aligned-unsigned.apk
+
+      - name: Collect signing tool
+        run: |
           cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" out/apksigner.jar
-          chmod +x out/zipalign
 
       - uses: actions/upload-artifact@v4
         with:
