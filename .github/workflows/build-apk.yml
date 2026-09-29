@@ -33,10 +33,12 @@ jobs:
 
       - name: Build and align release APK
         run: |
+          VERSION_NAME=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" app/build.gradle | head -n1)
+          test -n "$VERSION_NAME"
           gradle --no-daemon assembleRelease
           mkdir -p out
-          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -p -f 4             app/build/outputs/apk/release/app-release-unsigned.apk             out/MEDIPHARM-ABG-v1.0.0-aligned-unsigned.apk
-          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -v 4             out/MEDIPHARM-ABG-v1.0.0-aligned-unsigned.apk
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -p -f 4             app/build/outputs/apk/release/app-release-unsigned.apk             "out/MEDIPHARM-ABG-v${VERSION_NAME}-aligned-unsigned.apk"
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -v 4             "out/MEDIPHARM-ABG-v${VERSION_NAME}-aligned-unsigned.apk"
 
       - name: Collect signing tool
         run: |
