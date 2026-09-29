@@ -22,6 +22,13 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Build offline SQLite payload
+        run: |
+          mkdir -p app/src/main/assets out
+          python3 tools/build_offline_db.py             --url "https://www.sachyhoc.com/phan-tich-khi-mau-app/"             --output app/src/main/assets/abg_offline.db
+          sha256sum app/src/main/assets/abg_offline.db | tee out/abg_offline.db.sha256
+          cp app/src/main/assets/abg_offline.db out/abg_offline.db
+
       - name: Install Android SDK packages
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
@@ -36,7 +43,6 @@ jobs:
           VERSION_NAME=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" app/build.gradle | head -n1)
           test -n "$VERSION_NAME"
           gradle --no-daemon assembleRelease
-          mkdir -p out
           "$ANDROID_HOME/build-tools/35.0.0/zipalign" -p -f 4             app/build/outputs/apk/release/app-release-unsigned.apk             "out/MEDIPHARM-ABG-v${VERSION_NAME}-aligned-unsigned.apk"
           "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -v 4             "out/MEDIPHARM-ABG-v${VERSION_NAME}-aligned-unsigned.apk"
 
