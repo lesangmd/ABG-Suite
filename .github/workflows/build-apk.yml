@@ -26,7 +26,7 @@ jobs:
         run: |
           mkdir -p app/src/main/assets out
           base64 -d offline/abg_offline_v120.db.xz.b64 | xz -dc > app/src/main/assets/abg_offline.db
-          echo "5713a54af984c21e358bb824f20e21a994aa1de354f99e56d6d886e8baa064fe  app/src/main/assets/abg_offline.db" | sha256sum -c -
+          echo "a4b6d2ba5f87ee90bdca9f0023145587bac42d6dfcb206ac83eaa5c4f8b18266  app/src/main/assets/abg_offline.db" | sha256sum -c -
           sha256sum app/src/main/assets/abg_offline.db | tee out/abg_offline.db.sha256
           cp app/src/main/assets/abg_offline.db out/abg_offline.db
 
