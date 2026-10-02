@@ -426,10 +426,11 @@ if start < 0:
 end = s.find("        return true;", start)
 if end < 0:
     raise SystemExit("OfflineSyncJobService return anchor missing")
-block = r'''        HydrationManager.syncCore(
+block = r'''        final String syncCookie = cookie;
+        HydrationManager.syncCore(
                 this,
                 store,
-                cookie,
+                syncCookie,
                 HydrationManager.UA_MARKER,
                 false,
                 (success, status) -> {
@@ -443,7 +444,7 @@ block = r'''        HydrationManager.syncCore(
                         HydrationManager.syncDeep(
                                 this,
                                 store,
-                                cookie,
+                                syncCookie,
                                 HydrationManager.UA_MARKER,
                                 false,
                                 (deepSuccess, deepStatus) -> {
