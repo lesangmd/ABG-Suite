@@ -1,0 +1,65 @@
+name: Build NAH LAB Android v1.1.0
+
+on:
+  push:
+    branches: [ nah-lab-v110-build ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Reconstruct clean v1.1.0 source
+        run: |
+          mkdir -p /tmp/nah-v110
+          cat nah-lab-v110/chunks/*.b64 > /tmp/nah-v110/source.b64
+          base64 -d /tmp/nah-v110/source.b64 > /tmp/nah-v110/source.zip
+          unzip -t /tmp/nah-v110/source.zip
+          mkdir -p /tmp/nah-v110/src
+          unzip -q /tmp/nah-v110/source.zip -d /tmp/nah-v110/src
+          grep -q "versionCode 11000" /tmp/nah-v110/src/app/build.gradle
+          grep -q "versionName '1.1.0'" /tmp/nah-v110/src/app/build.gradle
+          grep -q "NAHISOAndroid/1.1.0" /tmp/nah-v110/src/app/src/main/java/vn/nah/iso15189suite/MainActivity.java
+
+      - name: Install Android SDK packages
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build clean APK
+        working-directory: /tmp/nah-v110/src
+        run: gradle :app:assembleDebug --no-daemon
+
+      - name: Verify and collect APK
+        run: |
+          mkdir -p out-nah-v110
+          APK=/tmp/nah-v110/src/app/build/outputs/apk/debug/app-debug.apk
+          cp "$APK" out-nah-v110/NAH-LAB-SUITE-Android-v1.1.0-Full-Offline-Hydration-test.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK" | tee out-nah-v110/apksigner-verify.txt
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -v 4 "$APK" > out-nah-v110/zipalign-verify.txt
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" > out-nah-v110/aapt-badging.txt
+          sha256sum out-nah-v110/NAH-LAB-SUITE-Android-v1.1.0-Full-Offline-Hydration-test.apk | tee out-nah-v110/NAH-LAB-SUITE-Android-v1.1.0-SHA256SUMS.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nah-lab-android-v1.1.0-full-offline-hydration
+          path: out-nah-v110/
+          if-no-files-found: error
+          retention-days: 7
