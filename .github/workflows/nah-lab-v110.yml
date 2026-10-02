@@ -30,6 +30,30 @@ jobs:
           unzip -t /tmp/nah-v110/source.zip
           mkdir -p /tmp/nah-v110/src
           unzip -q /tmp/nah-v110/source.zip -d /tmp/nah-v110/src
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('/tmp/nah-v110/src/app/src/main/java/vn/nah/iso15189suite/MainActivity.java')
+          s=p.read_text()
+          if 'private void openExternal(String url)' not in s:
+              needle='    private boolean networkAvailable() {\\n'
+              method='''    private void openExternal(String url) {
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(
+                    this,
+                    "Không tìm thấy trình duyệt để mở hệ thống.",
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
+    }
+
+'''
+              if needle not in s:
+                  raise SystemExit('openExternal insertion point missing')
+              s=s.replace(needle, method+needle, 1)
+              p.write_text(s)
+          PY
           grep -q "versionCode 11000" /tmp/nah-v110/src/app/build.gradle
           grep -q "versionName '1.1.0'" /tmp/nah-v110/src/app/build.gradle
           grep -q "NAHISOAndroid/1.1.0" /tmp/nah-v110/src/app/src/main/java/vn/nah/iso15189suite/MainActivity.java
