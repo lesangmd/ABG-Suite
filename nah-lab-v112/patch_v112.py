@@ -320,7 +320,7 @@ final class HydrationManager {
     private static String charsetOf(String contentType) {
         if (contentType == null) return null;
         Matcher m = Pattern.compile("charset=([^; ]+)", Pattern.CASE_INSENSITIVE).matcher(contentType);
-        return m.find() ? m.group(1).replace("\\"", "").trim() : null;
+        return m.find() ? m.group(1).replace("\"", "").trim() : null;
     }
 
     private static String guessMime(String url) {
