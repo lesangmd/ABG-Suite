@@ -1,8 +1,8 @@
-name: Build NAH LAB Android v1.0.10
+name: Build NAH LAB Android v1.0.11
 
 on:
   push:
-    branches: [ nah-lab-v1010-build ]
+    branches: [ nah-lab-v1011-build ]
   workflow_dispatch:
 
 permissions:
@@ -38,12 +38,12 @@ jobs:
       - name: Collect APK
         run: |
           mkdir -p out-nah
-          cp nah-lab/app/build/outputs/apk/debug/app-debug.apk out-nah/NAH-LAB-SUITE-Android-v1.0.10-clean-test.apk
-          sha256sum out-nah/NAH-LAB-SUITE-Android-v1.0.10-clean-test.apk | tee out-nah/NAH-LAB-SUITE-Android-v1.0.10-clean-test.apk.sha256
+          cp nah-lab/app/build/outputs/apk/debug/app-debug.apk out-nah/NAH-LAB-SUITE-Android-v1.0.11-clean-test.apk
+          sha256sum out-nah/NAH-LAB-SUITE-Android-v1.0.11-clean-test.apk | tee out-nah/NAH-LAB-SUITE-Android-v1.0.11-clean-test.apk.sha256
 
       - uses: actions/upload-artifact@v4
         with:
-          name: nah-lab-android-v1.0.10-clean
+          name: nah-lab-android-v1.0.11-clean
           path: out-nah/
           if-no-files-found: error
           retention-days: 7
