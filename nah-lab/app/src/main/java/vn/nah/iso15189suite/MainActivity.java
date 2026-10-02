@@ -153,7 +153,7 @@ public class MainActivity extends Activity {
         s.setTextZoom(100);
 
         String ua = s.getUserAgentString();
-        s.setUserAgentString((ua == null ? "" : ua) + " NAHISOAndroid/1.0.10");
+        s.setUserAgentString((ua == null ? "" : ua) + " NAHISOAndroid/1.0.11");
 
         CookieManager cm = CookieManager.getInstance();
         cm.setAcceptCookie(true);
