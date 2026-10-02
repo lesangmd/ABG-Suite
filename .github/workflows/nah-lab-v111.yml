@@ -1,4 +1,5 @@
 name: Build NAH LAB Android v1.1.1
+# retry after canonical logo payload correction
 
 on:
   push:
