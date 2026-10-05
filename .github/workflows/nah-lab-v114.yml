@@ -1,0 +1,80 @@
+name: Build NAH LAB Android v1.1.4
+
+on:
+  push:
+    branches: [ nah-lab-v114-build ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Reconstruct source chain
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/nah-v114
+          cat nah-lab-v110/chunks/*.b64 > /tmp/nah-v114/source.b64
+          base64 -d /tmp/nah-v114/source.b64 > /tmp/nah-v114/source.zip
+          unzip -t /tmp/nah-v114/source.zip
+          mkdir -p /tmp/nah-v114/src
+          unzip -q /tmp/nah-v114/source.zip -d /tmp/nah-v114/src
+          python3 nah-lab-v111/patch_v111.py /tmp/nah-v114/src nah-lab-v111/logo
+          python3 nah-lab-v112/patch_v112.py /tmp/nah-v114/src
+          python3 nah-lab-v113/patch_v113.py /tmp/nah-v114/src
+          python3 nah-lab-v114/patch_v114.py /tmp/nah-v114/src
+
+      - name: Contract checks
+        run: |
+          set -euo pipefail
+          grep -q "versionCode 11004" /tmp/nah-v114/src/app/build.gradle
+          grep -q "versionName '1.1.4'" /tmp/nah-v114/src/app/build.gradle
+          grep -q "NAHISOAndroid/1.1.4" /tmp/nah-v114/src/app/src/main/java/vn/nah/iso15189suite/MainActivity.java
+          ! grep -R "injectCheckButton" /tmp/nah-v114/src/app/src/main/java
+          grep -q "android-v1.1.4-web-v1.50" /tmp/nah-v114/src/app/src/main/java/vn/nah/iso15189suite/MainActivity.java
+          echo "ea0f8a7dca706f5908e19b811e8af39f5c20021220ee17320b5d9816ebf2c487  /tmp/nah-v114/src/app/src/main/res/drawable-nodpi/nah_logo_original.png" | sha256sum -c -
+
+      - name: Install Android SDK packages
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build clean APK
+        working-directory: /tmp/nah-v114/src
+        run: gradle :app:assembleDebug --no-daemon
+
+      - name: Verify and collect
+        run: |
+          set -euo pipefail
+          mkdir -p out-nah-v114
+          APK=/tmp/nah-v114/src/app/build/outputs/apk/debug/app-debug.apk
+          cp "$APK" out-nah-v114/NAH-LAB-SUITE-Android-v1.1.4-Login-Update-UX-Hotfix-test.apk
+          (cd /tmp/nah-v114/src && zip -qr "$GITHUB_WORKSPACE/out-nah-v114/NAH-LAB-SUITE-Android-v1.1.4-Source.zip" .)
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK" | tee out-nah-v114/apksigner-verify.txt
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -v 4 "$APK" > out-nah-v114/zipalign-verify.txt
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" > out-nah-v114/aapt-badging.txt
+          sha256sum out-nah-v114/NAH-LAB-SUITE-Android-v1.1.4-Login-Update-UX-Hotfix-test.apk out-nah-v114/NAH-LAB-SUITE-Android-v1.1.4-Source.zip | tee out-nah-v114/NAH-LAB-SUITE-Android-v1.1.4-SHA256SUMS.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nah-lab-android-v1.1.4-login-update-ux-hotfix
+          path: out-nah-v114/
+          if-no-files-found: error
+          retention-days: 7
