@@ -35,6 +35,12 @@ jobs:
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
+      - name: Inspect existing production signer
+        run: |
+          if [ -f MEDIPHARM-ABG-v1.1.1.apk ]; then
+            "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs MEDIPHARM-ABG-v1.1.1.apk
+          fi
+
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
