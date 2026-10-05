@@ -1,0 +1,112 @@
+name: Build signed NAH LAB Android v1.1.5
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  signed-release:
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      KS_B64: ${{ secrets.NAH_ANDROID_KEYSTORE_B64 }}
+      KS_ALIAS: ${{ secrets.NAH_ANDROID_KEY_ALIAS }}
+      KS_PASS: ${{ secrets.NAH_ANDROID_KEYSTORE_PASSWORD }}
+      KEY_PASS: ${{ secrets.NAH_ANDROID_KEY_PASSWORD }}
+      EXPECTED_CERT_SHA256: ${{ secrets.NAH_ANDROID_CERT_SHA256 }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Require persistent NAH signing secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$KS_B64"
+          test -n "$KS_ALIAS"
+          test -n "$KS_PASS"
+          test -n "$KEY_PASS"
+          test -n "$EXPECTED_CERT_SHA256"
+          echo "::add-mask::$KS_PASS"
+          echo "::add-mask::$KEY_PASS"
+          echo "Persistent signing secret gate PASS"
+
+      - name: Restore persistent NAH release keystore
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/nah-signing
+          printf '%s' "$KS_B64" | base64 -d > /tmp/nah-signing/nah-android-release.jks
+          test -s /tmp/nah-signing/nah-android-release.jks
+          keytool -list -keystore /tmp/nah-signing/nah-android-release.jks             -alias "$KS_ALIAS" -storepass "$KS_PASS" >/dev/null
+          echo "Keystore restore PASS"
+
+      - name: Reconstruct v1.1.5 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/nah-v115
+          cat nah-lab-v110/chunks/*.b64 > /tmp/nah-v115/source.b64
+          base64 -d /tmp/nah-v115/source.b64 > /tmp/nah-v115/source.zip
+          mkdir -p /tmp/nah-v115/src
+          unzip -q /tmp/nah-v115/source.zip -d /tmp/nah-v115/src
+          python3 nah-lab-v111/patch_v111.py /tmp/nah-v115/src nah-lab-v111/logo
+          python3 nah-lab-v112/patch_v112.py /tmp/nah-v115/src
+          python3 nah-lab-v113/patch_v113.py /tmp/nah-v115/src
+          python3 nah-lab-v114/patch_v114.py /tmp/nah-v115/src
+          cd /tmp/nah-v115/src
+          patch -p1 < "$GITHUB_WORKSPACE/nah-lab-v115/instant-start.patch"
+
+      - name: Install Android SDK packages
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Compile unsigned release
+        working-directory: /tmp/nah-v115/src
+        run: gradle :app:assembleRelease --no-daemon
+
+      - name: Align and sign with persistent NAH identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p out-v115-signed
+          UNSIGNED=/tmp/nah-v115/src/app/build/outputs/apk/release/app-release-unsigned.apk
+          ALIGNED=/tmp/nah-v115/app-release-aligned.apk
+          SIGNED=out-v115-signed/NAH-LAB-SUITE-Android-v1.1.5-release.apk
+
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -f 4 "$UNSIGNED" "$ALIGNED"
+
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign             --ks /tmp/nah-signing/nah-android-release.jks             --ks-key-alias "$KS_ALIAS"             --ks-pass env:KS_PASS             --key-pass env:KEY_PASS             --v1-signing-enabled true             --v2-signing-enabled true             --v3-signing-enabled true             --out "$SIGNED" "$ALIGNED"
+
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$SIGNED"             | tee out-v115-signed/apksigner-verify.txt
+
+          CERT_SHA=$("$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs "$SIGNED"             | awk -F': ' '/Signer #1 certificate SHA-256 digest/ {print tolower($2); exit}' | tr -d '[:space:]')
+          EXPECTED=$(printf '%s' "$EXPECTED_CERT_SHA256" | tr '[:upper:]' '[:lower:]' | tr -d ':[:space:]')
+          test -n "$CERT_SHA"
+          test "$CERT_SHA" = "$EXPECTED"
+          printf '%s\n' "$CERT_SHA" > out-v115-signed/NAH-ANDROID-RELEASE-CERT-SHA256.txt
+
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -v 4 "$SIGNED" > out-v115-signed/zipalign-verify.txt
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$SIGNED" > out-v115-signed/aapt-badging.txt
+          sha256sum "$SIGNED" > out-v115-signed/NAH-LAB-SUITE-Android-v1.1.5-release.apk.sha256
+
+      - name: Publish signed artifact for acceptance
+        uses: actions/upload-artifact@v4
+        with:
+          name: nah-lab-android-v1.1.5-signed-release-candidate
+          path: out-v115-signed/
+          if-no-files-found: error
+          retention-days: 14
