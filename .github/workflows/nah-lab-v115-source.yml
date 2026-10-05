@@ -1,0 +1,99 @@
+name: Validate NAH LAB Android v1.1.5 source
+
+on:
+  push:
+    branches: [ nah-lab-v115-source ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-source:
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Reconstruct v1.1.4 parent
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/nah-v115
+          cat nah-lab-v110/chunks/*.b64 > /tmp/nah-v115/source.b64
+          base64 -d /tmp/nah-v115/source.b64 > /tmp/nah-v115/source.zip
+          unzip -t /tmp/nah-v115/source.zip
+          mkdir -p /tmp/nah-v115/src
+          unzip -q /tmp/nah-v115/source.zip -d /tmp/nah-v115/src
+          python3 nah-lab-v111/patch_v111.py /tmp/nah-v115/src nah-lab-v111/logo
+          python3 nah-lab-v112/patch_v112.py /tmp/nah-v115/src
+          python3 nah-lab-v113/patch_v113.py /tmp/nah-v115/src
+          python3 nah-lab-v114/patch_v114.py /tmp/nah-v115/src
+
+      - name: Apply v1.1.5 instant-start patch
+        run: |
+          set -euo pipefail
+          cd /tmp/nah-v115/src
+          patch -p1 < "$GITHUB_WORKSPACE/nah-lab-v115/instant-start.patch"
+
+      - name: Source contract checks
+        run: |
+          set -euo pipefail
+          grep -q "versionCode 11005" /tmp/nah-v115/src/app/build.gradle
+          grep -q "versionName '1.1.5'" /tmp/nah-v115/src/app/build.gradle
+          grep -q "NAHISOAndroid/1.1.5" /tmp/nah-v115/src/app/src/main/java/vn/nah/iso15189suite/MainActivity.java
+          grep -q "NAHISOAndroid/1.1.5" /tmp/nah-v115/src/app/src/main/java/vn/nah/iso15189suite/HydrationManager.java
+          grep -q "loadDataWithBaseURL" /tmp/nah-v115/src/app/src/main/java/vn/nah/iso15189suite/MainActivity.java
+          grep -q "onPageCommitVisible" /tmp/nah-v115/src/app/src/main/java/vn/nah/iso15189suite/MainActivity.java
+          grep -q "android-v1.1.5-web-v1.50" /tmp/nah-v115/src/app/src/main/java/vn/nah/iso15189suite/MainActivity.java
+          grep -q "Shell refresh is deliberately last" /tmp/nah-v115/src/app/src/main/java/vn/nah/iso15189suite/HydrationManager.java
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('/tmp/nah-v115/src/app/src/main/java/vn/nah/iso15189suite/OfflineStore.java').read_text()
+          block=s.split('synchronized void ensureShellContract',1)[1].split('synchronized void invalidateShellCache',1)[0]
+          assert 'db.delete("shell_cache"' not in block
+          print('shell-preservation gate PASS')
+          PY
+          echo "ea0f8a7dca706f5908e19b811e8af39f5c20021220ee17320b5d9816ebf2c487  /tmp/nah-v115/src/app/src/main/res/drawable-nodpi/nah_logo_original.png" | sha256sum -c -
+
+      - name: Install Android SDK packages
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Compile unsigned release only
+        working-directory: /tmp/nah-v115/src
+        run: gradle :app:assembleRelease --no-daemon
+
+      - name: Package validated source only
+        run: |
+          set -euo pipefail
+          mkdir -p out-v115
+          test -f /tmp/nah-v115/src/app/build/outputs/apk/release/app-release-unsigned.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging /tmp/nah-v115/src/app/build/outputs/apk/release/app-release-unsigned.apk > out-v115/aapt-badging.txt
+          (cd /tmp/nah-v115/src && rm -rf .gradle app/build build && zip -qr "$GITHUB_WORKSPACE/out-v115/NAH-LAB-SUITE-Android-v1.1.5-Instant-Local-Shell-Startup-Source.zip" .)
+          sha256sum out-v115/NAH-LAB-SUITE-Android-v1.1.5-Instant-Local-Shell-Startup-Source.zip > out-v115/NAH-LAB-SUITE-Android-v1.1.5-Source-SHA256SUMS.txt
+          cat > out-v115/BUILD-STATUS.txt <<'TXT'
+          Android v1.1.5 source-only candidate
+          assembleRelease unsigned compile: PASS
+          Production APK: NOT GENERATED / NOT RELEASED
+          Reason: persistent NAH Android release keystore must be locked first.
+          TXT
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nah-lab-android-v1.1.5-source-only
+          path: out-v115/
+          if-no-files-found: error
+          retention-days: 14
