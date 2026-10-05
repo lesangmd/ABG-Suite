@@ -87,8 +87,8 @@ public final class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setStatusBarColor(Color.rgb(11, 102, 116));
-        getWindow().setNavigationBarColor(Color.rgb(243, 247, 249));
+        getWindow().setStatusBarColor(Color.rgb(7, 74, 168));
+        getWindow().setNavigationBarColor(Color.rgb(255, 255, 255));
 
         FrameLayout root = new FrameLayout(this);
         webView = new WebView(this);
@@ -258,7 +258,7 @@ public final class MainActivity extends Activity {
                     return;
                 }
                 status.setText("Đang xác thực…");
-                status.setTextColor(Color.rgb(43, 101, 112));
+                status.setTextColor(Color.rgb(8, 103, 216));
                 loginButton.setEnabled(false);
                 registerButton.setEnabled(false);
                 loginField.setEnabled(false);
