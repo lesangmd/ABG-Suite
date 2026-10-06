@@ -5,7 +5,7 @@
 
     <application
         android:allowBackup="false"
-        android:icon="@drawable/app_icon_brand"
+        android:icon="@mipmap/ic_launcher"\n        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="Khí Máu"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
