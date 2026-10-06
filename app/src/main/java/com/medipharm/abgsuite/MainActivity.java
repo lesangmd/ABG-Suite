@@ -74,7 +74,7 @@ import javax.crypto.SecretKey;
 public final class MainActivity extends Activity {
     private static final String LOGIN_ENDPOINT = "https://www.sachyhoc.com/wp-admin/admin-ajax.php?action=medipharm_abg_android_login";
     private static final String REGISTER_URL = "https://www.sachyhoc.com/dangky";
-    private static final String UPDATE_API = "https://api.github.com/repos/lesangmd/ABG-Suite/contents?ref=main";
+    private static final String UPDATE_API = "https://raw.githubusercontent.com/lesangmd/ABG-Suite/android-v1-channel/android-v1-update.json";
     private static final String LOCAL_BASE = "https://app.medipharm.local/";
     private static final String APP_SCHEME = "medipharmabg";
     private static final String DB_ASSET = "abg_offline.db";
@@ -771,8 +771,58 @@ public final class MainActivity extends Activity {
 })();
 </script>
 """;
+        String css101 = """
+<style id='abg-v101-corrective'>
+/* Remove duplicated hierarchy labels: retain one title + one description per block. */
+.abg-v130-kicker{display:none!important}
+.abg-v130-hero h1{margin-top:0!important}
+.nah-abg__clinical-head>div:first-child>span{display:none!important}
+
+/* Android dark header: same surface system as the dark workspace. */
+.nah-abg[data-theme='dark'] .nah-abg__hero,
+.nah-abg.nah-abg--dark .nah-abg__hero{
+  background:#101f29!important;
+  border-bottom-color:#2f4b5d!important;
+  box-shadow:0 6px 20px rgba(0,0,0,.24)!important
+}
+.nah-abg[data-theme='dark'] .nah-abg__app-search-box,
+.nah-abg.nah-abg--dark .nah-abg__app-search-box{
+  background:#0d1a22!important;
+  border-color:#375365!important;
+  box-shadow:none!important
+}
+.nah-abg[data-theme='dark'] .nah-abg__app-search-box input,
+.nah-abg.nah-abg--dark .nah-abg__app-search-box input{
+  color:#edf6fb!important;
+  background:transparent!important
+}
+.nah-abg[data-theme='dark'] .nah-abg__app-search-box input::placeholder,
+.nah-abg.nah-abg--dark .nah-abg__app-search-box input::placeholder{
+  color:#829aaa!important;
+  opacity:1!important
+}
+.nah-abg[data-theme='dark'] .nah-abg__app-search-box svg,
+.nah-abg.nah-abg--dark .nah-abg__app-search-box svg{
+  stroke:#8da9bb!important
+}
+.nah-abg[data-theme='dark'] .nah-abg__account-toggle,
+.nah-abg[data-theme='dark'] .nah-abg__menu-toggle,
+.nah-abg.nah-abg--dark .nah-abg__account-toggle,
+.nah-abg.nah-abg--dark .nah-abg__menu-toggle{
+  background:#132630!important;
+  border-color:#385568!important;
+  color:#dbeaf4!important;
+  box-shadow:none!important
+}
+.nah-abg[data-theme='dark'] .nah-abg__logo,
+.nah-abg.nah-abg--dark .nah-abg__logo{
+  background-color:#fff!important;
+  box-shadow:0 5px 16px rgba(0,0,0,.22)!important
+}
+</style>
+""";
         String out = html.replace("#0b6674", "#0a74d8").replace("#0B6674", "#0A74D8");
-        out = out.replace("</head>", css + css140 + css150 + "</head>");
+        out = out.replace("</head>", css + css140 + css150 + css101 + "</head>");
         return out.replace("</body>", js + v140 + js150 + "</body>");
     }
 
@@ -937,33 +987,28 @@ public final class MainActivity extends Activity {
                 connection = (HttpURLConnection) new URL(UPDATE_API).openConnection();
                 connection.setConnectTimeout(8000);
                 connection.setReadTimeout(10000);
-                connection.setRequestProperty("Accept", "application/vnd.github+json");
-                connection.setRequestProperty("User-Agent", "KhiMauAndroid/" + BuildConfig.VERSION_NAME);
+                connection.setRequestProperty("Accept", "application/json");
+                connection.setRequestProperty("Cache-Control", "no-cache");
+                connection.setRequestProperty("User-Agent", "KhiMauAndroidV1/" + BuildConfig.VERSION_NAME);
                 int code = connection.getResponseCode();
                 if (code < 200 || code >= 300) throw new IllegalStateException("HTTP " + code);
-                JSONArray files = new JSONArray(readAll(connection.getInputStream()));
-                UpdateInfo latest = null;
-                for (int i = 0; i < files.length(); i++) {
-                    JSONObject item = files.optJSONObject(i);
-                    if (item == null || !"file".equals(item.optString("type"))) continue;
-                    Matcher matcher = APK_PATTERN.matcher(item.optString("name"));
-                    if (!matcher.matches()) continue;
-                    Version version = new Version(
-                            Integer.parseInt(matcher.group(1)),
-                            Integer.parseInt(matcher.group(2)),
-                            Integer.parseInt(matcher.group(3))
-                    );
-                    String downloadUrl = item.optString("download_url");
-                    if (!downloadUrl.isEmpty() && (latest == null || version.compareTo(latest.version) > 0)) {
-                        latest = new UpdateInfo(version, item.optString("name"), downloadUrl);
-                    }
+
+                JSONObject manifest = new JSONObject(readAll(connection.getInputStream()));
+                if (!"android-v1".equals(manifest.optString("channel"))) {
+                    throw new IllegalStateException("Unexpected update channel");
                 }
-                UpdateInfo result = latest;
+                String versionText = manifest.optString("version");
+                String downloadUrl = manifest.optString("downloadUrl");
+                String fileName = manifest.optString("fileName");
+                if (versionText.isEmpty() || downloadUrl.isEmpty() || fileName.isEmpty()) {
+                    throw new IllegalStateException("Incomplete update manifest");
+                }
+                UpdateInfo result = new UpdateInfo(Version.parse(versionText), fileName, downloadUrl);
                 mainHandler.post(() -> presentUpdateResult(result));
             } catch (Exception e) {
                 mainHandler.post(() -> new AlertDialog.Builder(MainActivity.this)
                         .setTitle("Cập nhật ứng dụng")
-                        .setMessage("Chưa kiểm tra được phiên bản mới. Vui lòng kết nối Internet và thử lại.")
+                        .setMessage("Chưa kiểm tra được kênh cập nhật Android v1. Vui lòng kết nối Internet và thử lại.")
                         .setPositiveButton("Đóng", null)
                         .show());
             } finally {
