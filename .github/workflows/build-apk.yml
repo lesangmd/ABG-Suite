@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main, branding-v1.2.2-o2-co2, focused-home-v1.2.3, dictionary-home-v1.3.0, action-home-v1.4.0 ]
+    branches: [ main, branding-v1.2.2-o2-co2, focused-home-v1.2.3, dictionary-home-v1.3.0, action-home-v1.4.0, android-v1.5.0-complete ]
   workflow_dispatch:
 
 permissions:
@@ -22,11 +22,13 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Restore offline SQLite payload
+      - name: Build Web v6.7.3 offline SQLite snapshot
         run: |
+          set -euo pipefail
           mkdir -p app/src/main/assets out
-          base64 -d offline/abg_offline_v120.db.xz.b64 | xz -dc > app/src/main/assets/abg_offline.db
-          echo "a4b6d2ba5f87ee90bdca9f0023145587bac42d6dfcb206ac83eaa5c4f8b18266  app/src/main/assets/abg_offline.db" | sha256sum -c -
+          python3 tools/build_offline_db.py \
+            --url "https://www.sachyhoc.com/phan-tich-khi-mau-app/" \
+            --output app/src/main/assets/abg_offline.db | tee out/offline-build.json
           sha256sum app/src/main/assets/abg_offline.db | tee out/abg_offline.db.sha256
           cp app/src/main/assets/abg_offline.db out/abg_offline.db
 
