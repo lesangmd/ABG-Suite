@@ -63,8 +63,23 @@ def plugin_base(css_url):
 def main():
     ap=argparse.ArgumentParser();ap.add_argument('--url',default=DEFAULT_URL);ap.add_argument('--output',required=True);args=ap.parse_args()
     page=fetch(args.url).decode('utf-8','replace')
-    css_url=urllib.parse.urljoin(args.url,find_asset_url(page,'css'));core_url=urllib.parse.urljoin(args.url,find_asset_url(page,'core'));ui_url=urllib.parse.urljoin(args.url,find_asset_url(page,'ui'))
-    css=fetch(css_url).decode('utf-8','replace');core=fetch(core_url).decode('utf-8','replace');ui=fetch(ui_url).decode('utf-8','replace');runtime=build_runtime(page,css,core,ui)
+    fallback_base='https://www.sachyhoc.com/wp-content/plugins/medipharm-abg-suite/'
+    try:
+        css_url=urllib.parse.urljoin(args.url,find_asset_url(page,'css'))
+    except Exception:
+        css_url=urllib.parse.urljoin(fallback_base,'assets/css/nah-abg.css')
+    try:
+        core_url=urllib.parse.urljoin(args.url,find_asset_url(page,'core'))
+    except Exception:
+        core_url=urllib.parse.urljoin(fallback_base,'assets/js/nah-abg-core.js')
+    try:
+        ui_url=urllib.parse.urljoin(args.url,find_asset_url(page,'ui'))
+    except Exception:
+        ui_url=urllib.parse.urljoin(fallback_base,'assets/js/nah-abg-ui.js')
+    css=fetch(css_url).decode('utf-8','replace')
+    core=fetch(core_url).decode('utf-8','replace')
+    ui=fetch(ui_url).decode('utf-8','replace')
+    runtime=build_runtime(page,css,core,ui)
     out=os.path.abspath(args.output);os.makedirs(os.path.dirname(out),exist_ok=True)
     if os.path.exists(out):os.remove(out)
     db=sqlite3.connect(out);db.execute('CREATE TABLE app_meta (key TEXT PRIMARY KEY,value TEXT NOT NULL)');db.execute('CREATE TABLE runtime_assets (key TEXT PRIMARY KEY,mime_type TEXT NOT NULL,content BLOB NOT NULL,sha256 TEXT NOT NULL)');db.execute('CREATE TABLE content_files (path TEXT PRIMARY KEY,mime_type TEXT NOT NULL,content BLOB NOT NULL,sha256 TEXT NOT NULL)');db.execute('CREATE TABLE schema_info (schema_version INTEGER NOT NULL,generated_at TEXT NOT NULL)')
