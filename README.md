@@ -3,7 +3,7 @@
 Offline-first Android package for MEDIPHARM ABG Suite.
 
 - App name: Khí Máu
-- Android app version: 1.2.3
+- Android app version: 1.3.0
 - applicationId: com.medipharm.abgsuite
 - minSdk: 31 (Android 12)
 - target/compileSdk: 35
@@ -29,3 +29,12 @@ Offline-first Android package for MEDIPHARM ABG Suite.
 - Home screen restyled to the approved focused mockup: clinical hero, five modules, continue-learning summary and progress summary.
 - Secondary home feed/profile blocks are suppressed to reduce visual noise.
 - Offline-first data, authentication, update flow, calculations and package ID are unchanged.
+
+
+## v1.3.0 synchronized dictionary home
+
+- Android home aligned to MEDIPHARM ABG Web v6.5.0.
+- Dictionary-first learning surface with keyword and A–Z filtering.
+- Compact five-module clinical navigation and recent activity/resource cards.
+- Full-screen native MEDIPHARM ABG login replaces the legacy AlertDialog layout.
+- Offline-first database, authentication endpoint, calculations, update channel and package ID are unchanged.
