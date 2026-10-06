@@ -3,9 +3,9 @@ import argparse, hashlib, html, json, os, re, sqlite3, urllib.parse, urllib.requ
 from datetime import datetime, timezone
 
 DEFAULT_URL='https://www.sachyhoc.com/phan-tich-khi-mau-app/'
-DATA_VERSION='ABG-2026.09.29'
-APP_VERSION='1.2.0'
-UA='Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/154 Mobile Safari/537.36 MEDIPHARMABGAndroid/1.2.0'
+DATA_VERSION='ABG-WEB-6.7.3-2026.10.06'
+APP_VERSION='1.5.0'
+UA='Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/154 Mobile Safari/537.36 MEDIPHARMABGAndroid/1.5.0'
 PRODUCTION_JSON=['CASE-BANK-v5.2.json','MIXED-FORMAT-BANK-v5.3.json','MOCK-TEST-PACKS-v5.9.json','BLUEPRINT-EXAM-GENERATOR-v5.5.json','LONGITUDINAL-ASSESSMENT-SCHEMA-v5.8.json','LEARNING-NAVIGATION-v6.2.json','PLATFORM-MANIFEST-v6.0.json','CONTENT-GOVERNANCE-v5.9.json','ADVANCED-CONTENT-MANIFEST-v5.6.json','ASSESSMENT-BANK-v5.1-MANIFEST.json','CASE-BANK-v5.2-MANIFEST.json','MIXED-FORMAT-BANK-v5.3-MANIFEST.json']
 
 def fetch(url,timeout=30,optional=False):
@@ -51,9 +51,9 @@ def build_runtime(page,css,core,ui):
     m=re.search(r'<main\b[^>]*>(.*?)</main>',page,re.I|re.S)
     if not m:raise RuntimeError('Cannot extract <main>')
     main=patch_main(m.group(1))
-    cfg={'version':'6.2.9-offline','manifestUrl':'','swUrl':'','appUrl':'https://app.medipharm.local/','isHttps':False}
+    cfg={'version':'6.7.3-offline','manifestUrl':'','swUrl':'','appUrl':'https://app.medipharm.local/','isHttps':False}
     access={'member':True,'limit':999,'remaining':999,'exhausted':False,'ajaxUrl':'','nonce':'','registerUrl':'','openLogin':False}
-    bridge="(function(){document.documentElement.classList.add('medipharm-abg-offline');window.MEDIPHARMABG_OFFLINE={appVersion:'1.2.0',dataVersion:'ABG-2026.09.29'};document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href^=\"https://www.sachyhoc.com\"],a[href^=\"http://www.sachyhoc.com\"]');if(a){e.preventDefault();}},true);})();"
+    bridge="(function(){document.documentElement.classList.add('medipharm-abg-offline');window.MEDIPHARMABG_OFFLINE={appVersion:'1.5.0',dataVersion:'ABG-WEB-6.7.3-2026.10.06'};document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href^=\"https://www.sachyhoc.com\"],a[href^=\"http://www.sachyhoc.com\"]');if(a){e.preventDefault();}},true);})();"
     return '<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b6674"><title>Khí Máu</title><style>'+css+'</style></head><body class="nah-sdp-abg-app-body"><main>'+main+'</main><script>window.NAHABGConfig='+json.dumps(cfg,ensure_ascii=False)+';window.NAHABGAccess='+json.dumps(access,ensure_ascii=False)+';</script><script>'+core+'</script><script>'+ui+'</script><script>'+bridge+'</script></body></html>'
 
 def plugin_base(css_url):
