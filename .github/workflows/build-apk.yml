@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main, branding-v1.2.2-o2-co2, focused-home-v1.2.3, dictionary-home-v1.3.0, action-home-v1.4.0, android-v1.5.0-complete ]
+    branches: [ main, branding-v1.2.2-o2-co2, focused-home-v1.2.3, dictionary-home-v1.3.0, action-home-v1.4.0, android-v1.5.0-complete, android-v1.0.0-baseline ]
   workflow_dispatch:
 
 permissions:
