@@ -628,9 +628,68 @@ public final class MainActivity extends Activity {
 })();
 </script>
 """;
+        String css140 = """
+<style id='abg-action-v140'>
+.abg-v130-modules{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.abg-v130-module{min-height:90px!important;align-items:flex-start!important;text-align:left!important}
+.abg-v130-module:nth-child(n){grid-column:auto!important}
+.abg-v130-module:nth-child(5){grid-column:1/-1!important;display:grid!important;grid-template-columns:38px minmax(0,1fr)!important;align-items:center!important}
+.abg-v140-cases,.abg-v140-qa{padding:12px!important;border:1px solid #dbe8f2!important;border-radius:15px!important;background:#fff!important;box-shadow:0 5px 16px rgba(25,75,110,.035)!important}
+.abg-v140-case-list,.abg-v140-qa-list{display:grid!important;gap:7px!important}
+.abg-v140-case{display:grid!important;grid-template-columns:50px minmax(0,1fr) 14px!important;align-items:center!important;gap:8px!important;width:100%!important;padding:8px!important;border:1px solid #e4edf4!important;border-radius:11px!important;background:#fbfdff!important;color:#17364f!important;text-align:left!important}
+.abg-v140-case-tag{display:grid!important;place-items:center!important;width:50px!important;height:36px!important;border-radius:9px!important;background:#edf5ff!important;color:#0a6cbd!important;font-size:.58rem!important;font-weight:900!important}.abg-v140-case-tag.is-red{background:#fff0f1!important;color:#c83f4b!important}.abg-v140-case-tag.is-cyan{background:#e9f9fb!important;color:#0b8ea1!important}
+.abg-v140-case strong,.abg-v140-case small,.abg-v140-qa-list strong,.abg-v140-qa-list small{display:block!important}.abg-v140-case strong{font-size:.68rem!important}.abg-v140-case small,.abg-v140-qa-list small{margin-top:2px!important;font-size:.55rem!important;line-height:1.3!important;color:#7a8f9f!important}.abg-v140-case>b{justify-self:end!important;color:#2d6fa8!important}
+.abg-v140-qa-list button{display:block!important;width:100%!important;padding:10px!important;border:1px solid #e5edf4!important;border-radius:11px!important;background:#fbfdff!important;color:#17364f!important;text-align:left!important}.abg-v140-qa-list strong{font-size:.66rem!important;line-height:1.32!important}
+@media(max-width:430px){.abg-v130-hero{min-height:194px!important}.abg-v130-modules{gap:6px!important}.abg-v130-module{min-height:84px!important;padding:9px!important}.abg-v140-cases,.abg-v140-qa{padding:11px!important}}
+</style>
+""";
+        String v140 = """
+<script id='abg-action-v140-script'>
+(function(){
+  function q(s,c){return (c||document).querySelector(s)}
+  function qa(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))}
+  function enhance(){
+    var root=q('[data-nah-abg-root]'); if(!root||root.dataset.v140Ready==='1')return;
+    var home=q('[data-workspace-panel="home"]',root); if(!home)return;
+    root.dataset.v140Ready='1';
+    var modules=q('.abg-v130-modules',home);
+    if(modules){
+      modules.innerHTML='<button type="button" class="abg-v130-module" data-home-workspace="analysis"><span class="abg-v130-icon">▥</span><strong>Phân tích mới</strong><small>Nhập ABG và diễn giải</small></button>'+
+        '<button type="button" class="abg-v130-module" data-home-workspace="cases"><span class="abg-v130-icon">◉</span><strong>Ca lâm sàng mẫu</strong><small>Thực hành tình huống</small></button>'+
+        '<button type="button" class="abg-v130-module" data-home-workspace="review" data-learning-hub="qa"><span class="abg-v130-icon">?</span><strong>Hỏi đáp</strong><small>Câu hỏi lâm sàng ngắn</small></button>'+
+        '<button type="button" class="abg-v130-module" data-home-workspace="theory"><span class="abg-v130-icon">▤</span><strong>Từ điển học tập</strong><small>Thuật ngữ và bài học</small></button>'+
+        '<button type="button" class="abg-v130-module" data-home-workspace="review"><span class="abg-v130-icon">◎</span><strong>Ôn luyện</strong><small>Câu hỏi, thẻ nhớ và bộ đề</small></button>';
+    }
+    var panels=qa('.abg-v130-panel',home), dictionary=panels[0], resources=panels[1];
+    if(resources) resources.remove();
+    if(dictionary && !q('.abg-v140-cases',home)){
+      dictionary.insertAdjacentHTML('afterend',
+        '<section class="abg-v140-cases"><header class="abg-v130-head"><h2>Ca lâm sàng mẫu</h2><button type="button" class="abg-v130-link" data-home-workspace="cases">Xem tất cả →</button></header><div class="abg-v140-case-list">'+
+        '<button type="button" class="abg-v140-case" data-v140-demo="dka"><span class="abg-v140-case-tag is-red">DKA</span><span><strong>Nhiễm toan ceton</strong><small>HCO₃⁻ thấp · AG tăng</small></span><b>›</b></button>'+
+        '<button type="button" class="abg-v140-case" data-v140-demo="acute-resp-acidosis"><span class="abg-v140-case-tag">COPD</span><span><strong>Toan hô hấp cấp</strong><small>PaCO₂ tăng · đánh giá bù</small></span><b>›</b></button>'+
+        '<button type="button" class="abg-v140-case" data-v140-demo="pe-hypoxemia"><span class="abg-v140-case-tag is-cyan">PE</span><span><strong>Giảm oxy do thuyên tắc phổi</strong><small>P/F ratio · A–a gradient</small></span><b>›</b></button></div></section>'+
+        '<section class="abg-v140-qa"><header class="abg-v130-head"><h2>Hỏi đáp nhanh</h2><button type="button" class="abg-v130-link" data-home-workspace="review" data-learning-hub="qa">Mở Hỏi đáp →</button></header><div class="abg-v140-qa-list"><button type="button" data-home-workspace="review" data-learning-hub="qa"><strong>pH bình thường có loại trừ rối loạn toan–kiềm?</strong><small>Không. Có thể là rối loạn phối hợp.</small></button><button type="button" data-home-workspace="review" data-learning-hub="qa"><strong>Khi nào nên dùng P/F ratio?</strong><small>Khi lượng giá mức độ suy giảm oxy hóa.</small></button></div></section>');
+    }
+    home.addEventListener('click',function(e){
+      var c=e.target.closest('[data-v140-demo]'); if(!c)return;
+      var key=c.getAttribute('data-v140-demo'), sel=q('[data-classroom-demo-select]',root), load=q('[data-classroom-load-demo]',root);
+      if(sel&&load){sel.value=key;load.click();}
+    });
+    qa('[data-home-workspace]',home).forEach(function(b){
+      if(b.dataset.v140Bound==='1')return;b.dataset.v140Bound='1';
+      b.addEventListener('click',function(){
+        var k=b.getAttribute('data-home-workspace'), tab=q('[data-workspace-tab="'+k+'"]',root); if(tab)tab.click();
+        var hub=b.getAttribute('data-learning-hub'); if(hub){setTimeout(function(){var t=q('[data-learning-tab="'+hub+'"]',root);if(t)t.click();},40);}
+      });
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(enhance,0)});else setTimeout(enhance,0);
+})();
+</script>
+""";
         String out = html.replace("#0b6674", "#0a74d8").replace("#0B6674", "#0A74D8");
-        out = out.replace("</head>", css + "</head>");
-        return out.replace("</body>", js + "</body>");
+        out = out.replace("</head>", css + css140 + "</head>");
+        return out.replace("</body>", js + v140 + "</body>");
     }
 
     private void installBundledDatabase() throws Exception {
