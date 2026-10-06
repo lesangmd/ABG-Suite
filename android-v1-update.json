@@ -1,0 +1,10 @@
+{
+  "channel": "android-v1",
+  "version": "1.0.1",
+  "versionCode": 10001,
+  "fileName": "MEDIPHARM-ABG-v1.0.1-signed.apk",
+  "downloadUrl": "https://raw.githubusercontent.com/lesangmd/ABG-Suite/android-v1-channel/releases/MEDIPHARM-ABG-v1.0.1-signed.apk",
+  "sha256": "6672b1dc2a9914fe40b4f77e36481677e18371fb44fdf795b1a39b65f0904066",
+  "publishedAt": "2026-10-06",
+  "minSupportedVersionCode": 10000
+}
