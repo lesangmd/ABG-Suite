@@ -3,7 +3,7 @@
 Offline-first Android package for MEDIPHARM ABG Suite.
 
 - App name: Khí Máu
-- Android app version: 1.4.0
+- Android app version: 1.5.0
 - applicationId: com.medipharm.abgsuite
 - minSdk: 31 (Android 12)
 - target/compileSdk: 35
@@ -48,3 +48,13 @@ Offline-first Android package for MEDIPHARM ABG Suite.
 - Three sample cases surfaced on Home: DKA, acute respiratory acidosis/COPD, PE hypoxemia.
 - Clinical Q&A surfaced as a first-class Home card.
 - Analysis workspace remains calculation-compatible; Offline-First data and authentication are unchanged.
+
+
+## v1.5.0 complete synchronized release
+
+- Offline runtime is rebuilt from the installed MEDIPHARM ABG Web v6.7.3 source at build time.
+- Android no longer replaces the Home UI with a divergent legacy overlay; it uses the same v6.7.3 responsive UI, dark theme, menu role separation and bottom dock.
+- Native full-screen MEDIPHARM ABG authentication remains in place.
+- Android system status/navigation bars synchronize with WebApp light/dark mode.
+- PWA-install and Android-download actions are removed inside the native Android shell; account, logout and app-update actions remain native.
+- Offline-First database, ABG calculation core, entitlement validation and package ID are preserved.
