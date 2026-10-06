@@ -624,7 +624,7 @@ public final class MainActivity extends Activity {
     if(input)input.addEventListener('input',filter);if(alpha)alpha.addEventListener('click',function(e){var b=e.target.closest('[data-letter]');if(!b)return;active=b.getAttribute('data-letter')||'all';qa('[data-letter]',alpha).forEach(function(x){x.classList.toggle('is-active',x===b)});filter()});
 
     if(!q('.abg-v130-dock',root)){root.insertAdjacentHTML('beforeend',`<nav class="abg-v130-dock" aria-label="Điều hướng nhanh"><button type="button" class="is-active" data-home-workspace="home"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5V21h-6v-6H9v6H3z"/></svg><span>Trang chủ</span></button><button type="button" data-home-workspace="analysis"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg><span>Phân tích</span></button><button type="button" data-home-workspace="theory"><svg viewBox="0 0 24 24"><path d="M4 5.5A3.5 3.5 0 0 1 7.5 2H11v18H7.5A3.5 3.5 0 0 0 4 23zM20 5.5A3.5 3.5 0 0 0 16.5 2H13v18h3.5A3.5 3.5 0 0 1 20 23z"/></svg><span>Học tập</span></button><button type="button" data-home-workspace="review"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="M12 12 19 5"/></svg><span>Ôn luyện</span></button><button type="button" data-v130-more><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></svg><span>Thêm</span></button></nav>`)}
-    var dock=q('.abg-v130-dock',root);if(dock){dock.addEventListener('click',function(e){var more=e.target.closest('[data-v130-more]');if(more){var menu=q('.nah-abg__menu-toggle',root);if(menu)menu.click();return}var b=e.target.closest('[data-home-workspace]');if(b)qa('button',dock).forEach(function(x){x.classList.toggle('is-active',x===b)})})}
+    var dock=q('.abg-v130-dock',root);if(dock){dock.addEventListener('click',function(e){var more=e.target.closest('[data-v130-more]');if(more){var menu=q('.nah-abg__menu-toggle',root);if(menu)menu.click();return}var b=e.target.closest('[data-home-workspace]');if(!b)return;var name=b.getAttribute('data-home-workspace')||'home';var tab=q('[data-workspace-tab="'+name+'"]',root);if(tab)tab.click();qa('button',dock).forEach(function(x){x.classList.toggle('is-active',x===b)})})}
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
@@ -821,9 +821,25 @@ public final class MainActivity extends Activity {
 }
 </style>
 """;
+
+        String js102 = """
+<script id='abg-dock-v102-script'>
+(function(){
+  if(window.__abgDockV102)return;window.__abgDockV102=true;
+  document.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest?e.target.closest('.abg-v130-dock [data-home-workspace]'):null;
+    if(!b)return;
+    var r=b.closest('[data-nah-abg-root]');if(!r)return;
+    var name=b.getAttribute('data-home-workspace')||'home';
+    var tab=r.querySelector('[data-workspace-tab="'+name+'"]');if(!tab)return;
+    e.preventDefault();e.stopPropagation();tab.click();
+  },true);
+})();
+</script>
+""";
         String out = html.replace("#0b6674", "#0a74d8").replace("#0B6674", "#0A74D8");
         out = out.replace("</head>", css + css140 + css150 + css101 + "</head>");
-        return out.replace("</body>", js + v140 + js150 + "</body>");
+        return out.replace("</body>", js + v140 + js150 + js102 + "</body>");
     }
 
     private void applySystemTheme(boolean dark) {
