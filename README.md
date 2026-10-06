@@ -58,3 +58,11 @@ Offline-first Android package for MEDIPHARM ABG Suite.
 - Android system status/navigation bars synchronize with WebApp light/dark mode.
 - PWA-install and Android-download actions are removed inside the native Android shell; account, logout and app-update actions remain native.
 - Offline-First database, ABG calculation core, entitlement validation and package ID are preserved.
+
+
+## v1.0.2 dock navigation hotfix
+
+- Fixes the Android bottom dock so Trang chủ, Phân tích, Học tập and Ôn luyện route to the corresponding workspace instead of only changing visual state.
+- Keeps the Thêm bottom sheet behavior unchanged.
+- Preserves the Android v1 signing lineage, adaptive launcher icon, dark header correction and dedicated android-v1 update channel.
+- versionCode: 10002.
