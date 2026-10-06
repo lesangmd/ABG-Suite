@@ -776,6 +776,20 @@ public final class MainActivity extends Activity {
         return out.replace("</body>", js + v140 + js150 + "</body>");
     }
 
+    private void applySystemTheme(boolean dark) {
+        if (dark) {
+            getWindow().setStatusBarColor(Color.rgb(11, 24, 33));
+            getWindow().setNavigationBarColor(Color.rgb(15, 27, 35));
+            getWindow().getDecorView().setSystemUiVisibility(0);
+        } else {
+            getWindow().setStatusBarColor(Color.WHITE);
+            getWindow().setNavigationBarColor(Color.WHITE);
+            getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            );
+        }
+    }
+
     private void installBundledDatabase() throws Exception {
         File dir = new File(getFilesDir(), "offline");
         if (!dir.exists() && !dir.mkdirs()) throw new IllegalStateException("mkdir");
