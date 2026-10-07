@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main, branding-v1.2.2-o2-co2, focused-home-v1.2.3, dictionary-home-v1.3.0, action-home-v1.4.0, android-v1.5.0-complete, android-v1.0.0-baseline, android-v1.0.1-corrective, android-v1.0.2-dock-hotfix ]
+    branches: [ main, branding-v1.2.2-o2-co2, focused-home-v1.2.3, dictionary-home-v1.3.0, action-home-v1.4.0, android-v1.5.0-complete, android-v1.0.0-baseline, android-v1.0.1-corrective, android-v1.0.2-dock-hotfix, android-v1.1.0-web6110-canonical150 ]
   workflow_dispatch:
 
 permissions:
@@ -25,8 +25,13 @@ jobs:
       - name: Restore offline SQLite payload
         run: |
           mkdir -p app/src/main/assets out
-          base64 -d offline/abg_offline_v120.db.xz.b64 | xz -dc > app/src/main/assets/abg_offline.db
-          echo "a4b6d2ba5f87ee90bdca9f0023145587bac42d6dfcb206ac83eaa5c4f8b18266  app/src/main/assets/abg_offline.db" | sha256sum -c -
+          if compgen -G "offline/v110-chunks/part-*.txt" > /dev/null; then
+            cat offline/v110-chunks/part-*.txt > /tmp/abg_offline.db.xz.b64
+          else
+            cp offline/abg_offline_v120.db.xz.b64 /tmp/abg_offline.db.xz.b64
+          fi
+          base64 -d /tmp/abg_offline.db.xz.b64 | xz -dc > app/src/main/assets/abg_offline.db
+          echo "98697112c38b31af49bb7c34db4122fa98d19b622e69c79e48cfa8d6e4f59d73  app/src/main/assets/abg_offline.db" | sha256sum -c -
           sha256sum app/src/main/assets/abg_offline.db | tee out/abg_offline.db.sha256
           cp app/src/main/assets/abg_offline.db out/abg_offline.db
 
