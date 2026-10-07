@@ -25,11 +25,7 @@ jobs:
       - name: Restore offline SQLite payload
         run: |
           mkdir -p app/src/main/assets out
-          if compgen -G "offline/v110-chunks/part-*.txt" > /dev/null; then
-            cat offline/v110-chunks/part-*.txt > /tmp/abg_offline.db.xz.b64
-          else
-            cp offline/abg_offline_v120.db.xz.b64 /tmp/abg_offline.db.xz.b64
-          fi
+          cp offline/abg_offline_v110.db.xz.b64 /tmp/abg_offline.db.xz.b64
           base64 -d /tmp/abg_offline.db.xz.b64 | xz -dc > app/src/main/assets/abg_offline.db
           echo "98697112c38b31af49bb7c34db4122fa98d19b622e69c79e48cfa8d6e4f59d73  app/src/main/assets/abg_offline.db" | sha256sum -c -
           sha256sum app/src/main/assets/abg_offline.db | tee out/abg_offline.db.sha256
