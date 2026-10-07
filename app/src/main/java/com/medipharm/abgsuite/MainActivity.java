@@ -162,7 +162,15 @@ public final class MainActivity extends Activity {
                     Uri uri = request.getUrl();
                     String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase(Locale.ROOT);
                     String host = uri.getHost() == null ? "" : uri.getHost().toLowerCase(Locale.ROOT);
-                    if (("http".equals(scheme) || "https".equals(scheme)) && !"app.medipharm.local".equals(host)) {
+                    if (("http".equals(scheme) || "https".equals(scheme)) && "app.medipharm.local".equals(host)) {
+                        try {
+                            WebResourceResponse local = readLocalResource(uri);
+                            if (local != null) return local;
+                        } catch (Exception ignored) {
+                        }
+                        return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(new byte[0]));
+                    }
+                    if ("http".equals(scheme) || "https".equals(scheme)) {
                         return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(new byte[0]));
                     }
                 }
@@ -558,290 +566,11 @@ public final class MainActivity extends Activity {
     }
 
     private String applyBrandTheme(String html) {
-        String css = """
-<style id='abg-dictionary-v130'>
-:root{--abg-blue:#0a74d8;--abg-cyan:#16c8c5;--abg-navy:#102a43;--abg-muted:#6d8295;--abg-line:#dbe8f2}
-*{box-sizing:border-box}body{background:#f7fbfe!important;color:var(--abg-navy)!important}
-.nah-abg__hero{position:sticky!important;top:0!important;z-index:120!important;display:grid!important;grid-template-columns:auto 1fr auto!important;grid-template-areas:'brand spacer actions' 'search search search'!important;gap:8px!important;padding:8px 10px 10px!important;border-bottom:1px solid var(--abg-line)!important;background:rgba(255,255,255,.98)!important;box-shadow:0 4px 16px rgba(25,70,105,.05)!important}
-.nah-abg__brand{grid-area:brand!important;display:flex!important;align-items:center!important;text-decoration:none!important}.nah-abg__logo{width:44px!important;height:44px!important;min-width:44px!important;border-radius:13px!important;background:#fff url(%ICON%) center/cover no-repeat!important;box-shadow:0 4px 13px rgba(8,90,150,.11)!important;overflow:hidden!important}.nah-abg__logo>*{display:none!important}.nah-abg__brand-copy{display:none!important}
-.nah-abg__hero-actions{grid-area:actions!important;display:flex!important;align-items:center!important;gap:6px!important;justify-self:end!important}.nah-abg__account-toggle,.nah-abg__menu-toggle{display:grid!important;place-items:center!important;width:42px!important;height:42px!important;min-width:42px!important;padding:0!important;border:1px solid #cfdfeb!important;border-radius:12px!important;background:#fff!important;color:#0757a4!important;text-decoration:none!important}.nah-abg__account-toggle svg,.nah-abg__menu-toggle svg{width:21px!important;height:21px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.9!important;stroke-linecap:round!important;stroke-linejoin:round!important}
-.nah-abg__app-search{grid-area:search!important;width:100%!important;margin:0!important}.nah-abg__app-search-box{display:grid!important;grid-template-columns:40px minmax(0,1fr)!important;align-items:center!important;width:100%!important;min-height:42px!important;padding:0!important;border:1px solid #cfe0ec!important;border-radius:12px!important;background:#fff!important;overflow:hidden!important;box-shadow:none!important}.nah-abg__app-search-box svg{width:19px!important;height:19px!important;margin:auto!important;fill:none!important;stroke:#5a768d!important;stroke-width:1.8!important}.nah-abg__app-search-box input{width:100%!important;min-width:0!important;height:40px!important;padding:0 10px 0 0!important;border:0!important;outline:0!important;background:transparent!important;color:#17364f!important;font-size:.78rem!important;box-shadow:none!important}.nah-abg__app-search-box input::placeholder{color:#8da1b1!important}
-.nah-abg__workspace-tabs.nah-abg__app-nav{display:none!important}
-.abg-v130-home{display:grid!important;gap:10px!important;width:100%!important;padding:10px 10px 94px!important;background:#f7fbfe!important}
-.abg-v130-hero{position:relative!important;display:grid!important;grid-template-columns:minmax(0,1fr) 116px!important;gap:4px!important;min-height:206px!important;padding:18px 15px!important;border:1px solid #cfe4f3!important;border-radius:17px!important;background:linear-gradient(120deg,#f8fcff,#e7f6ff)!important;overflow:hidden!important;box-shadow:0 8px 22px rgba(25,80,120,.05)!important}.abg-v130-hero:after{content:'';position:absolute!important;left:25%!important;right:-15%!important;bottom:-48px!important;height:100px!important;border-radius:50%!important;background:linear-gradient(12deg,rgba(10,116,216,.24),rgba(22,200,197,.13),rgba(255,255,255,0))!important}.abg-v130-hero-copy{position:relative!important;z-index:2!important;align-self:center!important}.abg-v130-kicker{display:inline-block!important;padding:4px 8px!important;border-radius:999px!important;background:#e6f3ff!important;color:#0872cf!important;font-size:.53rem!important;font-weight:900!important;letter-spacing:.07em!important}.abg-v130-hero h1{margin:7px 0 5px!important;font-size:1.68rem!important;line-height:1.03!important;letter-spacing:-.035em!important;color:#0e2a44!important}.abg-v130-lead{margin:0!important;font-size:.71rem!important;line-height:1.35!important;font-weight:760!important;color:#17507f!important}.abg-v130-hero-actions{margin-top:13px!important}.abg-v130-hero-actions button{display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;width:100%!important;min-height:40px!important;padding:8px 10px!important;border:0!important;border-radius:10px!important;background:linear-gradient(135deg,#0871d5,#079de4 62%,#10c2cb)!important;color:#fff!important;font-size:.68rem!important;font-weight:820!important}.abg-v130-orb{position:absolute!important;right:7px!important;top:50%!important;z-index:2!important;width:106px!important;height:106px!important;transform:translateY(-50%)!important;border-radius:28px!important;background:#fff url(%ICON%) center/cover no-repeat!important;box-shadow:0 9px 24px rgba(8,90,150,.11)!important}
-.abg-v130-modules{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:7px!important}.abg-v130-module{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;gap:6px!important;min-width:0!important;min-height:86px!important;padding:10px!important;border:1px solid var(--abg-line)!important;border-radius:13px!important;background:#fff!important;color:#16344e!important;text-align:left!important;box-shadow:0 4px 13px rgba(25,75,110,.035)!important}.abg-v130-module:nth-child(1),.abg-v130-module:nth-child(2){grid-column:span 3!important}.abg-v130-module:nth-child(n+3){grid-column:span 2!important;align-items:center!important;text-align:center!important}.abg-v130-icon{display:grid!important;place-items:center!important;width:36px!important;height:36px!important;border-radius:10px!important;background:#e8f5ff!important;color:#0873d0!important}.abg-v130-module:nth-child(2) .abg-v130-icon{background:#ddf8f2!important;color:#06a98f!important}.abg-v130-module:nth-child(3) .abg-v130-icon{background:#eee8ff!important;color:#7754df!important}.abg-v130-module:nth-child(4) .abg-v130-icon{background:#fff0df!important;color:#e57b19!important}.abg-v130-module:nth-child(5) .abg-v130-icon{background:#e4f5fb!important;color:#0789c9!important}.abg-v130-icon svg{width:20px!important;height:20px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important}.abg-v130-module strong{font-size:.67rem!important;line-height:1.2!important}.abg-v130-module small{display:none!important}
-.abg-v130-panel{padding:12px!important;border:1px solid var(--abg-line)!important;border-radius:15px!important;background:#fff!important;box-shadow:0 5px 16px rgba(25,75,110,.035)!important}.abg-v130-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;margin-bottom:9px!important}.abg-v130-head h2{margin:0!important;font-size:.92rem!important;color:#163650!important}.abg-v130-link{border:0!important;background:transparent!important;color:#0872cf!important;font-size:.61rem!important;font-weight:800!important}
-.abg-v130-search{display:grid!important;grid-template-columns:36px minmax(0,1fr)!important;align-items:center!important;min-height:40px!important;border:1px solid #d7e6f1!important;border-radius:11px!important;background:#f9fcff!important;overflow:hidden!important}.abg-v130-search svg{width:17px!important;height:17px!important;margin:auto!important;fill:none!important;stroke:#688399!important;stroke-width:1.8!important}.abg-v130-search input{width:100%!important;min-width:0!important;height:38px!important;padding:0 10px 0 0!important;border:0!important;outline:0!important;background:transparent!important;color:#17364f!important;font-size:.7rem!important}.abg-v130-alpha{display:flex!important;gap:4px!important;overflow-x:auto!important;padding:7px 0!important;scrollbar-width:none!important}.abg-v130-alpha button{flex:0 0 auto!important;min-width:26px!important;height:26px!important;padding:0 7px!important;border:1px solid #dce8f1!important;border-radius:9px!important;background:#f5f9fc!important;color:#627d92!important;font-size:.61rem!important;font-weight:820!important}.abg-v130-alpha button:first-child{min-width:52px!important}.abg-v130-alpha button.is-active{border-color:#0872cf!important;background:#0872cf!important;color:#fff!important}
-.abg-v130-term{display:grid!important;grid-template-columns:32px minmax(0,1fr) 16px!important;align-items:center!important;gap:8px!important;width:100%!important;padding:8px 0!important;border:0!important;border-top:1px solid #edf2f6!important;background:#fff!important;color:#17364f!important;text-align:left!important}.abg-v130-term:first-child{border-top:0!important}.abg-v130-term>span{display:grid!important;place-items:center!important;width:32px!important;height:32px!important;border-radius:9px!important;background:#eaf5ff!important;color:#176fc4!important;font-weight:900!important}.abg-v130-term strong,.abg-v130-term small{display:block!important}.abg-v130-term strong{font-size:.72rem!important}.abg-v130-term small{margin-top:2px!important;font-size:.59rem!important;line-height:1.32!important;color:#748a9b!important}.abg-v130-term>b{justify-self:end!important;color:#2d6fa8!important;font-size:1rem!important}.abg-v130-term[hidden]{display:none!important}.abg-v130-empty{margin:8px 0 0!important;padding:10px!important;border-radius:9px!important;background:#f5f9fc!important;color:#71879a!important;text-align:center!important;font-size:.68rem!important}
-.abg-v130-resources{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important}.abg-v130-resource{display:grid!important;grid-template-rows:28px auto!important;gap:4px!important;min-height:90px!important;padding:8px!important;border:1px solid #e2ecf3!important;border-radius:11px!important;background:#f9fcff!important;color:#183b58!important;text-align:left!important}.abg-v130-resource span{display:grid!important;place-items:center!important;width:28px!important;height:28px!important;border-radius:8px!important;background:#e7f4ff!important;color:#0872cf!important}.abg-v130-resource strong{font-size:.55rem!important;line-height:1.3!important}
-.abg-v130-dock{position:fixed!important;left:8px!important;right:8px!important;bottom:max(7px,env(safe-area-inset-bottom))!important;z-index:1000!important;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;min-height:64px!important;padding:5px!important;border:1px solid #d5e5f0!important;border-radius:20px!important;background:rgba(255,255,255,.97)!important;box-shadow:0 16px 36px rgba(20,60,90,.14)!important;backdrop-filter:blur(12px)!important}.abg-v130-dock button{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;min-width:0!important;padding:5px 2px!important;border:0!important;border-radius:13px!important;background:transparent!important;color:#73899a!important}.abg-v130-dock button.is-active{background:#eaf5ff!important;color:#0872cf!important}.abg-v130-dock svg{width:20px!important;height:20px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important}.abg-v130-dock span{font-size:.52rem!important;font-weight:760!important}
-.nah-abg__app-footer{display:none!important}
-</style>
-""".replace("%ICON%", BRAND_ICON_DATA_URI);
-
-        String js = """
-<script id='abg-dictionary-v130-script'>
-(function(){
-  function q(s,c){return (c||document).querySelector(s)}
-  function qa(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))}
-  function norm(v){try{return String(v||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().trim()}catch(e){return String(v||'').toLowerCase().trim()}}
-  function init(){
-    var root=q('[data-nah-abg-root]'); if(!root)return;
-    var brand=q('.nah-abg__brand-title',root); if(brand)brand.textContent='ABG';
-    var search=q('[data-abg-search-input]',root); if(search)search.placeholder='Tìm thuật ngữ, ca lâm sàng, hướng dẫn…';
-    var home=q('[data-workspace-panel="home"]',root); if(!home)return;
-    home.className='nah-abg__app-home abg-v130-home';
-    home.innerHTML=`
-      <section class="abg-v130-hero">
-        <div class="abg-v130-hero-copy"><span class="abg-v130-kicker">CÔNG CỤ HỖ TRỢ LÂM SÀNG</span><h1>Phân tích khí máu động mạch</h1><p class="abg-v130-lead">Diễn giải nhanh · Toan–kiềm · Thông khí · Oxy hóa</p><div class="abg-v130-hero-actions"><button type="button" data-home-workspace="analysis">Bắt đầu phân tích →</button></div></div>
-        <div class="abg-v130-orb" aria-hidden="true"></div>
-      </section>
-      <section class="abg-v130-modules">
-        <button type="button" class="abg-v130-module" data-home-workspace="analysis"><span class="abg-v130-icon"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><strong>Phân tích khí máu</strong><small>Diễn giải có cấu trúc</small></button>
-        <button type="button" class="abg-v130-module" data-home-workspace="theory"><span class="abg-v130-icon"><svg viewBox="0 0 24 24"><path d="M4 5.5A3.5 3.5 0 0 1 7.5 2H11v18H7.5A3.5 3.5 0 0 0 4 23zM20 5.5A3.5 3.5 0 0 0 16.5 2H13v18h3.5A3.5 3.5 0 0 1 20 23z"/></svg></span><strong>Học tập</strong><small>Từ điển thuật ngữ</small></button>
-        <button type="button" class="abg-v130-module" data-home-workspace="cases"><span class="abg-v130-icon"><svg viewBox="0 0 24 24"><path d="M9 3v5a3 3 0 0 0 6 0V3M12 11v2a5 5 0 0 0 5 5h1"/><circle cx="19" cy="18" r="2"/></svg></span><strong>Ca lâm sàng</strong></button>
-        <button type="button" class="abg-v130-module" data-home-workspace="review"><span class="abg-v130-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="M12 12 19 5"/></svg></span><strong>Ôn luyện</strong></button>
-        <button type="button" class="abg-v130-module" data-home-workspace="profile"><span class="abg-v130-icon"><svg viewBox="0 0 24 24"><path d="M5 20V10M10 20V4M15 20v-7M20 20V7"/></svg></span><strong>Tiến độ</strong></button>
-      </section>
-      <section class="abg-v130-panel" data-v130-dictionary>
-        <header class="abg-v130-head"><h2>Từ điển học tập</h2><button type="button" class="abg-v130-link" data-home-workspace="theory">Xem tất cả →</button></header>
-        <label class="abg-v130-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></svg><input type="search" placeholder="Tìm thuật ngữ…" data-v130-search></label>
-        <div class="abg-v130-alpha" data-v130-alpha><button class="is-active" type="button" data-letter="all">Tất cả</button><button type="button" data-letter="A">A</button><button type="button" data-letter="B">B</button><button type="button" data-letter="K">K</button><button type="button" data-letter="P">P</button><button type="button" data-letter="T">T</button></div>
-        <div data-v130-list>
-          <button type="button" class="abg-v130-term" data-letter-row="T" data-key="toan chuyen hoa metabolic acidosis hco3" data-open-theory-topic="acidbase"><span>T</span><div><strong>Toan chuyển hóa</strong><small>Giảm HCO₃⁻ nguyên phát; đánh giá AG và bù trừ.</small></div><b>›</b></button>
-          <button type="button" class="abg-v130-term" data-letter-row="K" data-key="kiem ho hap respiratory alkalosis paco2" data-open-theory-topic="acidbase"><span>K</span><div><strong>Kiềm hô hấp</strong><small>Giảm PaCO₂ nguyên phát do tăng thông khí.</small></div><b>›</b></button>
-          <button type="button" class="abg-v130-term" data-letter-row="K" data-key="khoang trong anion anion gap ag" data-open-theory-topic="acidbase"><span>K</span><div><strong>Khoảng trống anion</strong><small>Hỗ trợ phân loại toan chuyển hóa.</small></div><b>›</b></button>
-          <button type="button" class="abg-v130-term" data-letter-row="P" data-key="pf ratio pao2 fio2 ards oxy" data-open-theory-topic="oxygen"><span>P</span><div><strong>P/F ratio</strong><small>PaO₂/FiO₂ để lượng giá oxy hóa máu.</small></div><b>›</b></button>
-          <button type="button" class="abg-v130-term" data-letter-row="B" data-key="bu tru compensation acid base" data-open-theory-topic="acidbase"><span>B</span><div><strong>Bù trừ</strong><small>Đáp ứng sinh lý hạn chế thay đổi pH.</small></div><b>›</b></button>
-          <button type="button" class="abg-v130-term" data-letter-row="A" data-key="a a gradient chenh ap phe nang dong mach" data-open-theory-topic="oxygen"><span>A</span><div><strong>Chênh áp A–a</strong><small>Định hướng cơ chế giảm oxy máu.</small></div><b>›</b></button>
-        </div><p class="abg-v130-empty" data-v130-empty hidden>Chưa tìm thấy thuật ngữ phù hợp.</p>
-      </section>
-      <section class="abg-v130-panel"><header class="abg-v130-head"><h2>Tài nguyên nổi bật</h2><button type="button" class="abg-v130-link" data-home-workspace="theory">Xem thêm →</button></header><div class="abg-v130-resources"><button class="abg-v130-resource" type="button" data-open-theory-topic="acidbase"><span>▥</span><strong>Sơ đồ tiếp cận toan–kiềm</strong></button><button class="abg-v130-resource" type="button" data-open-theory-topic="oxygen"><span>◫</span><strong>Oxy hóa và thông khí</strong></button><button class="abg-v130-resource" type="button" data-home-workspace="cases"><span>▧</span><strong>Ca lâm sàng thực hành</strong></button></div></section>
-    `;
-
-    var dictionary=q('[data-v130-dictionary]',home), input=q('[data-v130-search]',dictionary), alpha=q('[data-v130-alpha]',dictionary), rows=qa('.abg-v130-term',dictionary), empty=q('[data-v130-empty]',dictionary), active='all';
-    function filter(){var term=norm(input&&input.value),count=0;rows.forEach(function(row){var ok=(!term||norm(row.getAttribute('data-key')||row.textContent).indexOf(term)>=0)&&(active==='all'||row.getAttribute('data-letter-row')===active);row.hidden=!ok;if(ok)count++});if(empty)empty.hidden=count!==0}
-    if(input)input.addEventListener('input',filter);if(alpha)alpha.addEventListener('click',function(e){var b=e.target.closest('[data-letter]');if(!b)return;active=b.getAttribute('data-letter')||'all';qa('[data-letter]',alpha).forEach(function(x){x.classList.toggle('is-active',x===b)});filter()});
-
-    if(!q('.abg-v130-dock',root)){root.insertAdjacentHTML('beforeend',`<nav class="abg-v130-dock" aria-label="Điều hướng nhanh"><button type="button" class="is-active" data-home-workspace="home"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5V21h-6v-6H9v6H3z"/></svg><span>Trang chủ</span></button><button type="button" data-home-workspace="analysis"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg><span>Phân tích</span></button><button type="button" data-home-workspace="theory"><svg viewBox="0 0 24 24"><path d="M4 5.5A3.5 3.5 0 0 1 7.5 2H11v18H7.5A3.5 3.5 0 0 0 4 23zM20 5.5A3.5 3.5 0 0 0 16.5 2H13v18h3.5A3.5 3.5 0 0 1 20 23z"/></svg><span>Học tập</span></button><button type="button" data-home-workspace="review"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="M12 12 19 5"/></svg><span>Ôn luyện</span></button><button type="button" data-v130-more><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></svg><span>Thêm</span></button></nav>`)}
-    var dock=q('.abg-v130-dock',root);if(dock){dock.addEventListener('click',function(e){var more=e.target.closest('[data-v130-more]');if(more){var menu=q('.nah-abg__menu-toggle',root);if(menu)menu.click();return}var b=e.target.closest('[data-home-workspace]');if(!b)return;var name=b.getAttribute('data-home-workspace')||'home';var tab=q('[data-workspace-tab="'+name+'"]',root);if(tab)tab.click();qa('button',dock).forEach(function(x){x.classList.toggle('is-active',x===b)})})}
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-})();
-</script>
-""";
-        String css140 = """
-<style id='abg-action-v140'>
-.abg-v130-modules{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-.abg-v130-module{min-height:90px!important;align-items:flex-start!important;text-align:left!important}
-.abg-v130-module:nth-child(n){grid-column:auto!important}
-.abg-v130-module:nth-child(5){grid-column:1/-1!important;display:grid!important;grid-template-columns:38px minmax(0,1fr)!important;align-items:center!important}
-.abg-v140-cases,.abg-v140-qa{padding:12px!important;border:1px solid #dbe8f2!important;border-radius:15px!important;background:#fff!important;box-shadow:0 5px 16px rgba(25,75,110,.035)!important}
-.abg-v140-case-list,.abg-v140-qa-list{display:grid!important;gap:7px!important}
-.abg-v140-case{display:grid!important;grid-template-columns:50px minmax(0,1fr) 14px!important;align-items:center!important;gap:8px!important;width:100%!important;padding:8px!important;border:1px solid #e4edf4!important;border-radius:11px!important;background:#fbfdff!important;color:#17364f!important;text-align:left!important}
-.abg-v140-case-tag{display:grid!important;place-items:center!important;width:50px!important;height:36px!important;border-radius:9px!important;background:#edf5ff!important;color:#0a6cbd!important;font-size:.58rem!important;font-weight:900!important}.abg-v140-case-tag.is-red{background:#fff0f1!important;color:#c83f4b!important}.abg-v140-case-tag.is-cyan{background:#e9f9fb!important;color:#0b8ea1!important}
-.abg-v140-case strong,.abg-v140-case small,.abg-v140-qa-list strong,.abg-v140-qa-list small{display:block!important}.abg-v140-case strong{font-size:.68rem!important}.abg-v140-case small,.abg-v140-qa-list small{margin-top:2px!important;font-size:.55rem!important;line-height:1.3!important;color:#7a8f9f!important}.abg-v140-case>b{justify-self:end!important;color:#2d6fa8!important}
-.abg-v140-qa-list button{display:block!important;width:100%!important;padding:10px!important;border:1px solid #e5edf4!important;border-radius:11px!important;background:#fbfdff!important;color:#17364f!important;text-align:left!important}.abg-v140-qa-list strong{font-size:.66rem!important;line-height:1.32!important}
-@media(max-width:430px){.abg-v130-hero{min-height:194px!important}.abg-v130-modules{gap:6px!important}.abg-v130-module{min-height:84px!important;padding:9px!important}.abg-v140-cases,.abg-v140-qa{padding:11px!important}}
-</style>
-""";
-        String v140 = """
-<script id='abg-action-v140-script'>
-(function(){
-  function q(s,c){return (c||document).querySelector(s)}
-  function qa(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))}
-  function enhance(){
-    var root=q('[data-nah-abg-root]'); if(!root||root.dataset.v140Ready==='1')return;
-    var home=q('[data-workspace-panel="home"]',root); if(!home)return;
-    root.dataset.v140Ready='1';
-    var modules=q('.abg-v130-modules',home);
-    if(modules){
-      modules.innerHTML='<button type="button" class="abg-v130-module" data-home-workspace="analysis"><span class="abg-v130-icon">▥</span><strong>Phân tích mới</strong><small>Nhập ABG và diễn giải</small></button>'+
-        '<button type="button" class="abg-v130-module" data-home-workspace="cases"><span class="abg-v130-icon">◉</span><strong>Ca lâm sàng mẫu</strong><small>Thực hành tình huống</small></button>'+
-        '<button type="button" class="abg-v130-module" data-home-workspace="review" data-learning-hub="qa"><span class="abg-v130-icon">?</span><strong>Hỏi đáp</strong><small>Câu hỏi lâm sàng ngắn</small></button>'+
-        '<button type="button" class="abg-v130-module" data-home-workspace="theory"><span class="abg-v130-icon">▤</span><strong>Từ điển học tập</strong><small>Thuật ngữ và bài học</small></button>'+
-        '<button type="button" class="abg-v130-module" data-home-workspace="review"><span class="abg-v130-icon">◎</span><strong>Ôn luyện</strong><small>Câu hỏi, thẻ nhớ và bộ đề</small></button>';
+        // v1.1.0: WebApp v6.11.0 is the canonical UI. Do not layer the legacy
+        // Android v1.3-v1.5 CSS/DOM shell over it; that caused duplicated and
+        // conflicting navigation/layout after the IA reset.
+        return html;
     }
-    var panels=qa('.abg-v130-panel',home), dictionary=panels[0], resources=panels[1];
-    if(resources) resources.remove();
-    if(dictionary && !q('.abg-v140-cases',home)){
-      dictionary.insertAdjacentHTML('afterend',
-        '<section class="abg-v140-cases"><header class="abg-v130-head"><h2>Ca lâm sàng mẫu</h2><button type="button" class="abg-v130-link" data-home-workspace="cases">Xem tất cả →</button></header><div class="abg-v140-case-list">'+
-        '<button type="button" class="abg-v140-case" data-v140-demo="dka"><span class="abg-v140-case-tag is-red">DKA</span><span><strong>Nhiễm toan ceton</strong><small>HCO₃⁻ thấp · AG tăng</small></span><b>›</b></button>'+
-        '<button type="button" class="abg-v140-case" data-v140-demo="acute-resp-acidosis"><span class="abg-v140-case-tag">COPD</span><span><strong>Toan hô hấp cấp</strong><small>PaCO₂ tăng · đánh giá bù</small></span><b>›</b></button>'+
-        '<button type="button" class="abg-v140-case" data-v140-demo="pe-hypoxemia"><span class="abg-v140-case-tag is-cyan">PE</span><span><strong>Giảm oxy do thuyên tắc phổi</strong><small>P/F ratio · A–a gradient</small></span><b>›</b></button></div></section>'+
-        '<section class="abg-v140-qa"><header class="abg-v130-head"><h2>Hỏi đáp nhanh</h2><button type="button" class="abg-v130-link" data-home-workspace="review" data-learning-hub="qa">Mở Hỏi đáp →</button></header><div class="abg-v140-qa-list"><button type="button" data-home-workspace="review" data-learning-hub="qa"><strong>pH bình thường có loại trừ rối loạn toan–kiềm?</strong><small>Không. Có thể là rối loạn phối hợp.</small></button><button type="button" data-home-workspace="review" data-learning-hub="qa"><strong>Khi nào nên dùng P/F ratio?</strong><small>Khi lượng giá mức độ suy giảm oxy hóa.</small></button></div></section>');
-    }
-    home.addEventListener('click',function(e){
-      var c=e.target.closest('[data-v140-demo]'); if(!c)return;
-      var key=c.getAttribute('data-v140-demo'), sel=q('[data-classroom-demo-select]',root), load=q('[data-classroom-load-demo]',root);
-      if(sel&&load){sel.value=key;load.click();}
-    });
-    qa('[data-home-workspace]',home).forEach(function(b){
-      if(b.dataset.v140Bound==='1')return;b.dataset.v140Bound='1';
-      b.addEventListener('click',function(){
-        var k=b.getAttribute('data-home-workspace'), tab=q('[data-workspace-tab="'+k+'"]',root); if(tab)tab.click();
-        var hub=b.getAttribute('data-learning-hub'); if(hub){setTimeout(function(){var t=q('[data-learning-tab="'+hub+'"]',root);if(t)t.click();},40);}
-      });
-    });
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(enhance,0)});else setTimeout(enhance,0);
-})();
-</script>
-""";
-        String css150 = """
-<style id='abg-complete-v150'>
-.abg-v130-home{gap:12px!important;padding:12px 12px calc(82px + env(safe-area-inset-bottom))!important;background:linear-gradient(180deg,#f7fbfe,#eef7fc)!important}
-.abg-v130-hero{min-height:232px!important;padding:22px 18px!important;border-radius:20px!important;background:radial-gradient(circle at 86% 20%,rgba(16,194,203,.19),transparent 32%),radial-gradient(circle at 12% 6%,rgba(240,61,99,.10),transparent 28%),linear-gradient(122deg,#fbfdff,#e7f6ff)!important;box-shadow:0 10px 28px rgba(25,80,120,.08)!important}
-.abg-v130-kicker{font-size:.64rem!important;padding:5px 10px!important}
-.abg-v130-hero h1{font-size:2rem!important;line-height:1.02!important}
-.abg-v130-lead{font-size:.86rem!important;line-height:1.45!important}
-.abg-v130-hero-actions button{min-height:48px!important;font-size:.84rem!important;border-radius:13px!important}
-.abg-v130-orb{width:118px!important;height:118px!important;border-radius:30px!important}
-.abg-v130-modules{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
-.abg-v130-module{position:relative!important;display:grid!important;grid-template-columns:48px minmax(0,1fr) 24px!important;grid-template-rows:auto auto!important;column-gap:10px!important;row-gap:3px!important;min-height:112px!important;padding:14px!important;border-radius:17px!important;background:linear-gradient(145deg,#fff,#f4f9fd)!important;box-shadow:0 7px 18px rgba(25,75,110,.055)!important;text-align:left!important;align-items:center!important}
-.abg-v130-module:nth-child(1){background:linear-gradient(145deg,#f4faff,#e8f4ff)!important}
-.abg-v130-module:nth-child(2){background:linear-gradient(145deg,#fff8fa,#fff0f4)!important}
-.abg-v130-module:nth-child(3){background:linear-gradient(145deg,#faf7ff,#f1eaff)!important}
-.abg-v130-module:nth-child(4){background:linear-gradient(145deg,#f5fffb,#e9fbf4)!important}
-.abg-v130-module:nth-child(5){grid-column:1/-1!important;min-height:88px!important;background:linear-gradient(145deg,#fffaf4,#fff1df)!important}
-.abg-v130-icon{grid-row:1 / span 2!important;width:48px!important;height:48px!important;border-radius:14px!important}
-.abg-v130-module strong{grid-column:2!important;font-size:.9rem!important;line-height:1.15!important;color:#143550!important}
-.abg-v130-module small{display:block!important;grid-column:2!important;font-size:.71rem!important;line-height:1.38!important;color:#6d8295!important}
-.abg-v130-module:after{content:'→'!important;grid-column:3!important;grid-row:1 / span 2!important;display:grid!important;place-items:center!important;width:24px!important;height:24px!important;border-radius:999px!important;background:rgba(255,255,255,.72)!important;color:#0a74d8!important;font-weight:900!important}
-.abg-v140-cases,.abg-v140-qa,.abg-v130-panel{padding:14px!important;border-radius:18px!important;box-shadow:0 7px 20px rgba(25,75,110,.05)!important}
-.abg-v130-head h2{font-size:1.1rem!important}.abg-v130-link{font-size:.72rem!important}
-.abg-v140-case{min-height:78px!important;padding:11px!important;border-radius:13px!important;background:linear-gradient(145deg,#fbfdff,#f2f8fc)!important}
-.abg-v140-case strong{font-size:.82rem!important}.abg-v140-case small{font-size:.67rem!important}
-.abg-v140-qa-list button{padding:12px!important;border-radius:13px!important;background:linear-gradient(145deg,#fbfdff,#f5f9fc)!important}
-.abg-v140-qa-list strong{font-size:.78rem!important}.abg-v140-qa-list small{font-size:.66rem!important}
-.abg-v130-search{min-height:46px!important;border-radius:13px!important}.abg-v130-search input{height:44px!important;font-size:.78rem!important}
-.abg-v130-alpha button{height:30px!important;min-width:30px!important;font-size:.68rem!important}
-.abg-v130-term{grid-template-columns:38px minmax(0,1fr) 18px!important;gap:10px!important;padding:10px 0!important}.abg-v130-term>span{width:38px!important;height:38px!important}.abg-v130-term strong{font-size:.82rem!important}.abg-v130-term small{font-size:.67rem!important}
-.abg-v130-dock{left:0!important;right:0!important;bottom:0!important;min-height:68px!important;border-radius:22px 22px 0 0!important;border-left:0!important;border-right:0!important;border-bottom:0!important;padding:5px 6px max(5px,env(safe-area-inset-bottom))!important;background:rgba(255,255,255,.985)!important;box-shadow:0 -10px 28px rgba(20,60,90,.13)!important}
-.abg-v130-dock span{font-size:.61rem!important}
-.abg-v150-more-backdrop{position:fixed!important;inset:0!important;z-index:1450!important;display:none!important;align-items:flex-end!important;background:rgba(4,18,28,.48)!important;backdrop-filter:blur(5px)!important}
-.abg-v150-more-backdrop.is-open{display:flex!important}
-.abg-v150-more-panel{width:100%!important;max-height:min(78dvh,680px)!important;padding:14px 14px calc(16px + env(safe-area-inset-bottom))!important;border-radius:24px 24px 0 0!important;background:#fff!important;box-shadow:0 -22px 60px rgba(0,0,0,.22)!important;overflow:auto!important}
-.abg-v150-more-panel header{display:flex!important;align-items:center!important;justify-content:space-between!important;margin-bottom:10px!important}.abg-v150-more-panel h2{margin:0!important;font-size:1.12rem!important;color:#17364f!important}.abg-v150-more-close{width:40px!important;height:40px!important;border:1px solid #d6e5ef!important;border-radius:12px!important;background:#fff!important;color:#17364f!important;font-size:1.25rem!important}
-.abg-v150-more-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}.abg-v150-more-grid button,.abg-v150-more-grid a{display:grid!important;grid-template-columns:36px minmax(0,1fr)!important;align-items:center!important;gap:9px!important;min-height:66px!important;padding:10px!important;border:1px solid #dce8f1!important;border-radius:14px!important;background:#f8fbfe!important;color:#17364f!important;text-align:left!important;text-decoration:none!important}.abg-v150-more-grid strong{display:block!important;font-size:.78rem!important}.abg-v150-more-grid small{display:block!important;margin-top:2px!important;font-size:.63rem!important;color:#72889a!important}
-.nah-abg[data-theme='dark'] body,.nah-abg.nah-abg--dark body{background:#0d1922!important}
-.nah-abg[data-theme='dark'] .abg-v130-home,.nah-abg.nah-abg--dark .abg-v130-home{background:linear-gradient(180deg,#0e1b24,#10222d)!important}
-.nah-abg[data-theme='dark'] .abg-v130-hero,.nah-abg.nah-abg--dark .abg-v130-hero{background:radial-gradient(circle at 86% 20%,rgba(16,194,203,.12),transparent 32%),radial-gradient(circle at 12% 6%,rgba(240,61,99,.09),transparent 28%),linear-gradient(122deg,#142631,#10202a)!important;border-color:#2f4a5c!important}
-.nah-abg[data-theme='dark'] .abg-v130-hero h1,.nah-abg.nah-abg--dark .abg-v130-hero h1,.nah-abg[data-theme='dark'] .abg-v130-head h2,.nah-abg.nah-abg--dark .abg-v130-head h2{color:#f2f7fb!important}
-.nah-abg[data-theme='dark'] .abg-v130-lead,.nah-abg.nah-abg--dark .abg-v130-lead{color:#9fc7e5!important}
-.nah-abg[data-theme='dark'] .abg-v130-module,.nah-abg.nah-abg--dark .abg-v130-module{background:linear-gradient(145deg,#162832,#12222c)!important;border-color:#304b5d!important;box-shadow:none!important}
-.nah-abg[data-theme='dark'] .abg-v130-module strong,.nah-abg.nah-abg--dark .abg-v130-module strong{color:#f1f7fb!important}.nah-abg[data-theme='dark'] .abg-v130-module small,.nah-abg.nah-abg--dark .abg-v130-module small{color:#9fb4c3!important}
-.nah-abg[data-theme='dark'] .abg-v140-cases,.nah-abg[data-theme='dark'] .abg-v140-qa,.nah-abg[data-theme='dark'] .abg-v130-panel,.nah-abg.nah-abg--dark .abg-v140-cases,.nah-abg.nah-abg--dark .abg-v140-qa,.nah-abg.nah-abg--dark .abg-v130-panel{background:#111f29!important;border-color:#304b5d!important;color:#eef6fb!important}
-.nah-abg[data-theme='dark'] .abg-v140-case,.nah-abg[data-theme='dark'] .abg-v140-qa-list button,.nah-abg[data-theme='dark'] .abg-v130-term,.nah-abg.nah-abg--dark .abg-v140-case,.nah-abg.nah-abg--dark .abg-v140-qa-list button,.nah-abg.nah-abg--dark .abg-v130-term{background:#162630!important;border-color:#2f4a5c!important;color:#eef6fb!important}
-.nah-abg[data-theme='dark'] .abg-v140-case strong,.nah-abg[data-theme='dark'] .abg-v140-qa-list strong,.nah-abg[data-theme='dark'] .abg-v130-term strong,.nah-abg.nah-abg--dark .abg-v140-case strong,.nah-abg.nah-abg--dark .abg-v140-qa-list strong,.nah-abg.nah-abg--dark .abg-v130-term strong{color:#f2f7fb!important}
-.nah-abg[data-theme='dark'] .abg-v140-case small,.nah-abg[data-theme='dark'] .abg-v140-qa-list small,.nah-abg[data-theme='dark'] .abg-v130-term small,.nah-abg.nah-abg--dark .abg-v140-case small,.nah-abg.nah-abg--dark .abg-v140-qa-list small,.nah-abg.nah-abg--dark .abg-v130-term small{color:#9fb4c3!important}
-.nah-abg[data-theme='dark'] .abg-v130-search,.nah-abg.nah-abg--dark .abg-v130-search{background:#0e1b24!important;border-color:#345064!important}.nah-abg[data-theme='dark'] .abg-v130-search input,.nah-abg.nah-abg--dark .abg-v130-search input{color:#eef6fb!important;background:transparent!important}
-.nah-abg[data-theme='dark'] .abg-v130-alpha button,.nah-abg.nah-abg--dark .abg-v130-alpha button{background:#172832!important;border-color:#304a5c!important;color:#a9bdcc!important}.nah-abg[data-theme='dark'] .abg-v130-alpha button.is-active,.nah-abg.nah-abg--dark .abg-v130-alpha button.is-active{background:#0a74d8!important;color:#fff!important}
-.nah-abg[data-theme='dark'] .abg-v130-dock,.nah-abg.nah-abg--dark .abg-v130-dock{background:rgba(15,27,35,.99)!important;border-top-color:#2d4759!important;box-shadow:0 -12px 34px rgba(0,0,0,.28)!important}.nah-abg[data-theme='dark'] .abg-v130-dock button,.nah-abg.nah-abg--dark .abg-v130-dock button{color:#91a6b5!important}.nah-abg[data-theme='dark'] .abg-v130-dock button.is-active,.nah-abg.nah-abg--dark .abg-v130-dock button.is-active{background:#17364a!important;color:#7bcaff!important}
-.nah-abg[data-theme='dark'] .nah-abg__menu,.nah-abg.nah-abg--dark .nah-abg__menu{background:#111f29!important;border-color:#355166!important;color:#eef6fb!important;box-shadow:0 22px 56px rgba(0,0,0,.44)!important}.nah-abg[data-theme='dark'] .nah-abg__menu .nah-abg__menu-item,.nah-abg.nah-abg--dark .nah-abg__menu .nah-abg__menu-item{background:transparent!important;color:#dcebf4!important}.nah-abg[data-theme='dark'] .nah-abg__menu .nah-abg__menu-item:hover,.nah-abg.nah-abg--dark .nah-abg__menu .nah-abg__menu-item:hover{background:#18303d!important;color:#89d4ff!important}
-.nah-abg[data-theme='dark'] .abg-v150-more-backdrop,.nah-abg.nah-abg--dark .abg-v150-more-backdrop{background:rgba(2,11,17,.66)!important}.nah-abg[data-theme='dark'] .abg-v150-more-panel,.nah-abg.nah-abg--dark .abg-v150-more-panel{background:#111f29!important;color:#eef6fb!important}.nah-abg[data-theme='dark'] .abg-v150-more-panel h2,.nah-abg.nah-abg--dark .abg-v150-more-panel h2{color:#f3f8fb!important}.nah-abg[data-theme='dark'] .abg-v150-more-close,.nah-abg.nah-abg--dark .abg-v150-more-close{background:#172832!important;border-color:#355166!important;color:#dcebf4!important}.nah-abg[data-theme='dark'] .abg-v150-more-grid button,.nah-abg[data-theme='dark'] .abg-v150-more-grid a,.nah-abg.nah-abg--dark .abg-v150-more-grid button,.nah-abg.nah-abg--dark .abg-v150-more-grid a{background:#162630!important;border-color:#304a5c!important;color:#eef6fb!important}.nah-abg[data-theme='dark'] .abg-v150-more-grid small,.nah-abg.nah-abg--dark .abg-v150-more-grid small{color:#9fb4c3!important}
-@media(max-width:430px){.abg-v130-hero{min-height:218px!important}.abg-v130-module{min-height:106px!important;padding:12px!important}.abg-v130-module strong{font-size:.86rem!important}.abg-v130-module small{font-size:.68rem!important}}
-</style>
-""";
-        String js150 = """
-<script id='abg-complete-v150-script'>
-(function(){
-  function q(s,c){return (c||document).querySelector(s)}
-  function qa(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))}
-  function root(){return q('[data-nah-abg-root]')}
-  function isDark(r){return !!r&&(r.getAttribute('data-theme')==='dark'||r.classList.contains('nah-abg--dark'))}
-  function syncTheme(){var r=root(),m=isDark(r)?'dark':'light';if(syncTheme.last===m)return;syncTheme.last=m;try{location.href='medipharmabg://theme?mode='+m}catch(e){}}
-  function openWorkspace(k){var r=root(),t=q('[data-workspace-tab="'+k+'"]',r);if(t)t.click()}
-  function init(){
-    var r=root();if(!r){setTimeout(init,60);return}
-    syncTheme();new MutationObserver(syncTheme).observe(r,{attributes:true,attributeFilter:['data-theme','class']});
-    var menu=q('.nah-abg__menu',r);
-    if(menu){qa('.nah-abg__menu-item',menu).forEach(function(x){var t=(x.textContent||'').replace(/\s+/g,' ').trim();if(/^(Trang chủ|Phân tích khí máu|Học tập|Ôn luyện|Về Trang chủ|Cài Webapp|Tải ứng dụng Android)$/.test(t))x.style.display='none'});}
-    if(!q('.abg-v150-more-backdrop',r)){
-      r.insertAdjacentHTML('beforeend','<div class="abg-v150-more-backdrop" data-v150-more><section class="abg-v150-more-panel" role="dialog" aria-modal="true"><header><h2>Thêm</h2><button type="button" class="abg-v150-more-close" data-v150-more-close aria-label="Đóng">×</button></header><div class="abg-v150-more-grid"><button type="button" data-v150-workspace="cases"><span>◉</span><span><strong>Ca lâm sàng</strong><small>Thực hành tình huống</small></span></button><button type="button" data-v150-workspace="profile"><span>▥</span><span><strong>Tiến độ</strong><small>Kết quả học tập</small></span></button><a href="medipharmabg://account"><span>◎</span><span><strong>Tài khoản</strong><small>Thông tin truy cập</small></span></a><a href="medipharmabg://check-update"><span>↻</span><span><strong>Kiểm tra cập nhật</strong><small>Phiên bản Android mới</small></span></a></div></section></div>');
-    }
-    var sheet=q('[data-v150-more]',r),dock=q('.abg-v130-dock',r);
-    function close(){if(sheet)sheet.classList.remove('is-open')}
-    if(sheet){q('[data-v150-more-close]',sheet).addEventListener('click',close);sheet.addEventListener('click',function(e){if(e.target===sheet)close()});qa('[data-v150-workspace]',sheet).forEach(function(b){b.addEventListener('click',function(){openWorkspace(b.getAttribute('data-v150-workspace'));close()})})}
-    if(dock){dock.addEventListener('click',function(e){var more=e.target.closest('[data-v130-more]');if(!more)return;e.preventDefault();e.stopImmediatePropagation();if(sheet)sheet.classList.add('is-open')},true)}
-    document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-})();
-</script>
-""";
-        String css101 = """
-<style id='abg-v101-corrective'>
-/* Remove duplicated hierarchy labels: retain one title + one description per block. */
-.abg-v130-kicker{display:none!important}
-.abg-v130-hero h1{margin-top:0!important}
-.nah-abg__clinical-head>div:first-child>span{display:none!important}
-
-/* Android dark header: same surface system as the dark workspace. */
-.nah-abg[data-theme='dark'] .nah-abg__hero,
-.nah-abg.nah-abg--dark .nah-abg__hero{
-  background:#101f29!important;
-  border-bottom-color:#2f4b5d!important;
-  box-shadow:0 6px 20px rgba(0,0,0,.24)!important
-}
-.nah-abg[data-theme='dark'] .nah-abg__app-search-box,
-.nah-abg.nah-abg--dark .nah-abg__app-search-box{
-  background:#0d1a22!important;
-  border-color:#375365!important;
-  box-shadow:none!important
-}
-.nah-abg[data-theme='dark'] .nah-abg__app-search-box input,
-.nah-abg.nah-abg--dark .nah-abg__app-search-box input{
-  color:#edf6fb!important;
-  background:transparent!important
-}
-.nah-abg[data-theme='dark'] .nah-abg__app-search-box input::placeholder,
-.nah-abg.nah-abg--dark .nah-abg__app-search-box input::placeholder{
-  color:#829aaa!important;
-  opacity:1!important
-}
-.nah-abg[data-theme='dark'] .nah-abg__app-search-box svg,
-.nah-abg.nah-abg--dark .nah-abg__app-search-box svg{
-  stroke:#8da9bb!important
-}
-.nah-abg[data-theme='dark'] .nah-abg__account-toggle,
-.nah-abg[data-theme='dark'] .nah-abg__menu-toggle,
-.nah-abg.nah-abg--dark .nah-abg__account-toggle,
-.nah-abg.nah-abg--dark .nah-abg__menu-toggle{
-  background:#132630!important;
-  border-color:#385568!important;
-  color:#dbeaf4!important;
-  box-shadow:none!important
-}
-.nah-abg[data-theme='dark'] .nah-abg__logo,
-.nah-abg.nah-abg--dark .nah-abg__logo{
-  background-color:#fff!important;
-  box-shadow:0 5px 16px rgba(0,0,0,.22)!important
-}
-</style>
-""";
-
-        String js102 = """
-<script id='abg-dock-v102-script'>
-(function(){
-  if(window.__abgDockV102)return;window.__abgDockV102=true;
-  document.addEventListener('click',function(e){
-    var b=e.target&&e.target.closest?e.target.closest('.abg-v130-dock [data-home-workspace]'):null;
-    if(!b)return;
-    var r=b.closest('[data-nah-abg-root]');if(!r)return;
-    var name=b.getAttribute('data-home-workspace')||'home';
-    var tab=r.querySelector('[data-workspace-tab="'+name+'"]');if(!tab)return;
-    e.preventDefault();e.stopPropagation();tab.click();
-  },true);
-})();
-</script>
-""";
-        String out = html.replace("#0b6674", "#0a74d8").replace("#0B6674", "#0A74D8");
-        out = out.replace("</head>", css + css140 + css150 + css101 + "</head>");
-        return out.replace("</body>", js + v140 + js150 + js102 + "</body>");
-    }
-
     private void applySystemTheme(boolean dark) {
         if (dark) {
             getWindow().setStatusBarColor(Color.rgb(11, 24, 33));
@@ -885,6 +614,33 @@ public final class MainActivity extends Activity {
         try (Cursor cursor = db.rawQuery("SELECT content FROM runtime_assets WHERE key=?", new String[]{"runtime_html"})) {
             if (!cursor.moveToFirst()) throw new IllegalStateException("runtime missing");
             return new String(cursor.getBlob(0), StandardCharsets.UTF_8);
+        } finally {
+            db.close();
+        }
+    }
+
+    private WebResourceResponse readLocalResource(Uri uri) {
+        String path = uri == null ? "" : uri.getPath();
+        if (path == null) path = "";
+        while (path.startsWith("/")) path = path.substring(1);
+        if (path.isEmpty()) return null;
+        File dbFile = new File(new File(getFilesDir(), "offline"), DB_FILE);
+        SQLiteDatabase db = SQLiteDatabase.openDatabase(dbFile.getAbsolutePath(), null, SQLiteDatabase.OPEN_READONLY);
+        try (Cursor cursor = db.rawQuery("SELECT mime_type, content FROM content_files WHERE path=?", new String[]{path})) {
+            if (!cursor.moveToFirst()) return null;
+            String declared = cursor.getString(0);
+            byte[] bytes = cursor.getBlob(1);
+            String mime = declared == null ? "application/octet-stream" : declared;
+            String encoding = null;
+            int semicolon = mime.indexOf(';');
+            if (semicolon >= 0) {
+                String params = mime.substring(semicolon + 1).trim();
+                mime = mime.substring(0, semicolon).trim();
+                if (params.toLowerCase(Locale.ROOT).startsWith("charset=")) {
+                    encoding = params.substring("charset=".length()).trim();
+                }
+            }
+            return new WebResourceResponse(mime, encoding, new ByteArrayInputStream(bytes));
         } finally {
             db.close();
         }
