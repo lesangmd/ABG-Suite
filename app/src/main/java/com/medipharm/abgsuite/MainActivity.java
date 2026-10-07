@@ -162,6 +162,13 @@ public final class MainActivity extends Activity {
                     Uri uri = request.getUrl();
                     String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase(Locale.ROOT);
                     String host = uri.getHost() == null ? "" : uri.getHost().toLowerCase(Locale.ROOT);
+                    if (("http".equals(scheme) || "https".equals(scheme)) && "app.medipharm.local".equals(host)) {
+                        String path = uri.getPath() == null ? "" : uri.getPath();
+                        if (path.startsWith("/assets/data/learning/")) {
+                            WebResourceResponse local = readContentResponse(path.substring(1));
+                            if (local != null) return local;
+                        }
+                    }
                     if (("http".equals(scheme) || "https".equals(scheme)) && !"app.medipharm.local".equals(host)) {
                         return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(new byte[0]));
                     }
@@ -545,7 +552,7 @@ public final class MainActivity extends Activity {
     private void loadOfflineRuntime() {
         executor.execute(() -> {
             try {
-                String html = applyBrandTheme(readRuntimeHtml());
+                String html = readRuntimeHtml();
                 mainHandler.post(() -> {
                     localRuntime = true;
                     webView.clearHistory();
@@ -896,6 +903,34 @@ public final class MainActivity extends Activity {
             return cursor.moveToFirst() ? cursor.getString(0) : "";
         } finally {
             db.close();
+        }
+    }
+
+    private WebResourceResponse readContentResponse(String path) {
+        File dbFile = new File(new File(getFilesDir(), "offline"), DB_FILE);
+        SQLiteDatabase db = null;
+        try {
+            db = SQLiteDatabase.openDatabase(dbFile.getAbsolutePath(), null, SQLiteDatabase.OPEN_READONLY);
+            try (Cursor cursor = db.rawQuery(
+                    "SELECT mime_type, content FROM content_files WHERE path=?",
+                    new String[]{path})) {
+                if (!cursor.moveToFirst()) return null;
+                String declared = cursor.getString(0);
+                byte[] data = cursor.getBlob(1);
+                String mime = declared == null ? "application/octet-stream" : declared;
+                String encoding = null;
+                int semi = mime.indexOf(';');
+                if (semi >= 0) {
+                    String params = mime.substring(semi + 1).toLowerCase(Locale.ROOT);
+                    mime = mime.substring(0, semi).trim();
+                    if (params.contains("charset=utf-8")) encoding = "utf-8";
+                }
+                return new WebResourceResponse(mime, encoding, new ByteArrayInputStream(data));
+            }
+        } catch (Exception ignored) {
+            return null;
+        } finally {
+            if (db != null) db.close();
         }
     }
 
