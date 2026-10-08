@@ -1,0 +1,46 @@
+name: Build Wave 1 WebApp RC
+
+on:
+  push:
+    branches: [ visual-v2-webapp-shell ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble WebApp v2 Wave 1 RC
+        run: |
+          set -euo pipefail
+          rm -rf dist
+          mkdir -p dist/medipharm-abg-wave1/assets
+          cp webapp-v2/index.html dist/medipharm-abg-wave1/index.html
+          cp webapp-v2/design-tokens.css dist/medipharm-abg-wave1/assets/design-tokens.css
+          cp webapp-v2/wave1.css dist/medipharm-abg-wave1/assets/wave1.css
+          cp webapp-v2/wave1.js dist/medipharm-abg-wave1/assets/wave1.js
+          cp webapp-v2/manifest.webmanifest dist/medipharm-abg-wave1/manifest.webmanifest
+          cp webapp-v2/sw.js dist/medipharm-abg-wave1/sw.js
+          cp docs/VISUAL-BASELINE-V2.md dist/medipharm-abg-wave1/VISUAL-BASELINE-V2.md
+          test -s dist/medipharm-abg-wave1/index.html
+          grep -q 'data-wave="1"' dist/medipharm-abg-wave1/index.html
+          grep -q 'viewport-fit=cover' dist/medipharm-abg-wave1/index.html
+          grep -q 'Trang chủ' dist/medipharm-abg-wave1/index.html
+          grep -q 'Phân tích' dist/medipharm-abg-wave1/index.html
+          grep -q 'Ca lâm sàng' dist/medipharm-abg-wave1/index.html
+          grep -q 'Học tập' dist/medipharm-abg-wave1/index.html
+          ! grep -q '>Thêm<' dist/medipharm-abg-wave1/index.html
+          cd dist
+          zip -r MEDIPHARM-ABG-WebApp-v2-Wave1-RC1.zip medipharm-abg-wave1
+          sha256sum MEDIPHARM-ABG-WebApp-v2-Wave1-RC1.zip > MEDIPHARM-ABG-WebApp-v2-Wave1-RC1.zip.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MEDIPHARM-ABG-WebApp-v2-Wave1-RC1
+          path: |
+            dist/MEDIPHARM-ABG-WebApp-v2-Wave1-RC1.zip
+            dist/MEDIPHARM-ABG-WebApp-v2-Wave1-RC1.zip.sha256
+          if-no-files-found: error
+          retention-days: 14
