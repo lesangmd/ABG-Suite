@@ -1,0 +1,9 @@
+{
+  "applicationId": "com.medipharm.abgsuite",
+  "versionName": "1.2.1",
+  "versionCode": 8,
+  "webappSource": "6.11.4",
+  "signerSha256": "b379ab8e88190569072c998e0ff40f3da7de95554430d214d2e15bb3ba888cc9",
+  "identity": "original v1.1.0 brand image + login UI, v1.2.0 fixed signing key",
+  "regressionScope": "logo/launcher, full-screen login, retain native dock and clinical runtime"
+}

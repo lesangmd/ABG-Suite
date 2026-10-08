@@ -224,81 +224,199 @@ public final class MainActivity extends Activity {
         }
     }
 
+
+    private GradientDrawable loginBackground(int color, int radiusDp, int strokeColor) {
+        GradientDrawable result = new GradientDrawable();
+        result.setColor(color);
+        result.setCornerRadius(dp(radiusDp));
+        if (strokeColor != Color.TRANSPARENT) result.setStroke(dp(1), strokeColor);
+        return result;
+    }
+
+    private TextView loginLabel(String text, int sp, int color, boolean strong) {
+        TextView label = new TextView(this);
+        label.setText(text);
+        label.setTextSize(sp);
+        label.setTextColor(color);
+        if (strong) label.setTypeface(null, android.graphics.Typeface.BOLD);
+        return label;
+    }
+
+    private View loginArtBackground() {
+        return new View(this) {
+            private final android.graphics.Paint paint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+            @Override protected void onDraw(android.graphics.Canvas canvas) {
+                super.onDraw(canvas);
+                float w = getWidth(), h = getHeight();
+                canvas.drawColor(Color.rgb(242, 249, 255));
+                android.graphics.Path wave = new android.graphics.Path();
+                paint.setStyle(android.graphics.Paint.Style.FILL);
+                paint.setColor(Color.rgb(211, 236, 252));
+                wave.moveTo(0, 0); wave.lineTo(w, 0);
+                wave.lineTo(w, h * .22f);
+                wave.cubicTo(w*.70f, h*.02f, w*.38f, h*.09f, 0, h*.28f);
+                wave.close();canvas.drawPath(wave,paint);
+                wave.reset();paint.setColor(Color.rgb(255, 228, 232));
+                wave.moveTo(0, h*.86f);
+                wave.cubicTo(w*.25f,h*.75f,w*.55f,h*.85f,w,h*.68f);
+                wave.lineTo(w,h);wave.lineTo(0,h);wave.close();canvas.drawPath(wave,paint);
+                wave.reset();paint.setColor(Color.rgb(91, 198, 241));
+                wave.moveTo(0,h*.94f);
+                wave.cubicTo(w*.30f,h*.79f,w*.63f,h*.97f,w,h*.78f);
+                wave.lineTo(w,h);wave.lineTo(0,h);wave.close();canvas.drawPath(wave,paint);
+                wave.reset();paint.setColor(Color.rgb(0, 119, 220));
+                wave.moveTo(0,h);
+                wave.cubicTo(w*.33f,h*.88f,w*.64f,h*1.02f,w,h*.87f);
+                wave.lineTo(w,h);wave.close();canvas.drawPath(wave,paint);
+            }
+        };
+    }
+
     private void showNativeLogin(String initialMessage) {
         localRuntime = false;
         if (nativeDock != null) nativeDock.setVisibility(View.GONE);
-        if (loginDialog != null && loginDialog.isShowing()) {
-            loginDialog.dismiss();
-        }
+        if (loginDialog != null && loginDialog.isShowing()) loginDialog.dismiss();
 
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        int pad = dp(22);
-        layout.setPadding(pad, dp(8), pad, 0);
+        final int ink=Color.rgb(17,44,72), muted=Color.rgb(96,116,136);
+        FrameLayout scene = new FrameLayout(this);
+        scene.addView(loginArtBackground(),new FrameLayout.LayoutParams(-1,-1));
+        android.widget.ScrollView scroll = new android.widget.ScrollView(this);
+        scroll.setFillViewport(true);
+        scroll.setClipToPadding(false);
+        scroll.setVerticalScrollBarEnabled(false);
+        scroll.setPadding(dp(16),dp(20),dp(16),dp(20));
+        FrameLayout.LayoutParams scrollParams=new FrameLayout.LayoutParams(-1,-1);
+        scene.addView(scroll,scrollParams);
+        FrameLayout center=new FrameLayout(this);
+        scroll.addView(center,new android.widget.ScrollView.LayoutParams(-1,-2));
 
-        TextView intro = new TextView(this);
-        intro.setText("Kết nối Internet chỉ được dùng để xác thực tài khoản MEDIPHARM. Sau khi đăng nhập thành công, Khí Máu hoạt động ngoại tuyến trên thiết bị.");
-        intro.setTextSize(15f);
-        intro.setTextColor(Color.rgb(67, 90, 97));
-        intro.setPadding(0, 0, 0, dp(14));
-        layout.addView(intro);
+        LinearLayout card = new LinearLayout(this) {
+            @Override protected void onMeasure(int widthMeasureSpec,int heightMeasureSpec) {
+                int max=Math.min(View.MeasureSpec.getSize(widthMeasureSpec),dp(420));
+                super.onMeasure(View.MeasureSpec.makeMeasureSpec(max,View.MeasureSpec.EXACTLY),heightMeasureSpec);
+            }
+        };
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setPadding(dp(24),dp(17),dp(24),dp(22));
+        card.setBackground(loginBackground(Color.WHITE,28,Color.rgb(220,233,242)));
+        card.setElevation(dp(10));
+        FrameLayout.LayoutParams cardParams=new FrameLayout.LayoutParams(-1,-2,android.view.Gravity.CENTER);
+        cardParams.topMargin=dp(10);cardParams.bottomMargin=dp(10);
+        center.addView(card,cardParams);
 
-        EditText loginField = new EditText(this);
-        loginField.setHint("Email hoặc tên đăng nhập");
+        TextView exit=loginLabel("✕  Thoát",13,muted,false);
+        exit.setGravity(android.view.Gravity.END);
+        exit.setPadding(dp(8),dp(4),0,dp(4));
+        exit.setOnClickListener(v->finish());
+        card.addView(exit,new LinearLayout.LayoutParams(-1,-2));
+
+        android.widget.ImageView logo = new android.widget.ImageView(this);
+        logo.setImageResource(R.drawable.abg_brand);
+        logo.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+        LinearLayout.LayoutParams logoParams=new LinearLayout.LayoutParams(dp(132),dp(132));
+        logoParams.gravity=android.view.Gravity.CENTER_HORIZONTAL;
+        card.addView(logo,logoParams);
+
+        TextView brand=loginLabel("MEDIPHARM ABG",24,Color.rgb(0,101,177),true);
+        brand.setGravity(android.view.Gravity.CENTER);
+        card.addView(brand,new LinearLayout.LayoutParams(-1,-2));
+
+        TextView subtitle=loginLabel("Phân tích khí máu động mạch",14,muted,false);
+        subtitle.setGravity(android.view.Gravity.CENTER);
+        subtitle.setPadding(0,dp(4),0,dp(9));
+        card.addView(subtitle,new LinearLayout.LayoutParams(-1,-2));
+
+        TextView welcome=loginLabel("Truy cập MEDIPHARM ABG",19,ink,true);
+        welcome.setGravity(android.view.Gravity.CENTER);
+        welcome.setPadding(0,dp(8),0,dp(15));
+        card.addView(welcome,new LinearLayout.LayoutParams(-1,-2));
+
+        TextView userLabel=loginLabel("Tên đăng nhập hoặc email",14,ink,true);
+        userLabel.setPadding(0,0,0,dp(5));
+        card.addView(userLabel);
+        EditText loginField=new EditText(this);
+        loginField.setHint("Nhập tên đăng nhập hoặc email");
         loginField.setSingleLine(true);
+        loginField.setTextSize(16);
         loginField.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-        layout.addView(loginField, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        ));
+        loginField.setPadding(dp(14),0,dp(14),0);
+        loginField.setBackground(loginBackground(Color.rgb(249,252,255),13,Color.rgb(208,222,232)));
+        LinearLayout.LayoutParams fieldParam=new LinearLayout.LayoutParams(-1,dp(54));
+        fieldParam.bottomMargin=dp(13);
+        card.addView(loginField,fieldParam);
 
-        EditText passwordField = new EditText(this);
-        passwordField.setHint("Mật khẩu");
+        TextView passwordLabel=loginLabel("Mật khẩu",14,ink,true);
+        passwordLabel.setPadding(0,0,0,dp(5));
+        card.addView(passwordLabel);
+        EditText passwordField=new EditText(this);
+        passwordField.setHint("Nhập mật khẩu");
         passwordField.setSingleLine(true);
-        passwordField.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        layout.addView(passwordField, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        ));
+        passwordField.setTextSize(16);
+        passwordField.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        passwordField.setPadding(dp(14),0,dp(14),0);
+        passwordField.setBackground(loginBackground(Color.rgb(249,252,255),13,Color.rgb(208,222,232)));
+        card.addView(passwordField,new LinearLayout.LayoutParams(-1,dp(54)));
 
-        TextView status = new TextView(this);
-        status.setText(initialMessage == null ? "" : initialMessage);
-        status.setTextSize(14f);
-        status.setTextColor(Color.rgb(165, 50, 50));
-        status.setPadding(0, dp(10), 0, 0);
-        layout.addView(status);
+        TextView forgot=loginLabel("Quên mật khẩu?",13,Color.rgb(0,119,205),false);
+        forgot.setGravity(android.view.Gravity.END);
+        forgot.setPadding(0,dp(9),0,dp(8));
+        forgot.setOnClickListener(v->openExternal(Uri.parse("https://www.sachyhoc.com/wp-login.php?action=lostpassword")));
+        card.addView(forgot,new LinearLayout.LayoutParams(-1,-2));
 
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Đăng nhập MEDIPHARM")
-                .setView(layout)
-                .setCancelable(false)
-                .setNegativeButton("Thoát", (d, which) -> finish())
-                .setNeutralButton("Đăng ký tài khoản", null)
-                .setPositiveButton("Đăng nhập", null)
-                .create();
-        loginDialog = dialog;
+        TextView status=loginLabel(initialMessage == null?"":initialMessage,14,Color.rgb(176,57,61),false);
+        status.setGravity(android.view.Gravity.CENTER);
+        status.setPadding(0,0,0,dp(8));
+        card.addView(status,new LinearLayout.LayoutParams(-1,-2));
 
-        dialog.setOnShowListener(unused -> {
-            Button registerButton = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
-            Button loginButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-            registerButton.setOnClickListener(v -> openExternal(Uri.parse(REGISTER_URL)));
-            loginButton.setOnClickListener(v -> {
-                String login = loginField.getText().toString().trim();
-                String password = passwordField.getText().toString();
-                if (login.isEmpty() || password.isEmpty()) {
-                    status.setText("Vui lòng nhập đầy đủ tài khoản và mật khẩu.");
-                    return;
-                }
-                status.setText("Đang xác thực…");
-                status.setTextColor(Color.rgb(43, 101, 112));
-                loginButton.setEnabled(false);
-                registerButton.setEnabled(false);
-                loginField.setEnabled(false);
-                passwordField.setEnabled(false);
-                authenticateCredentials(login, password, dialog, loginButton, registerButton, loginField, passwordField, status);
-            });
+        Button loginButton=new Button(this);
+        loginButton.setText("Đăng nhập  →");
+        loginButton.setAllCaps(false);
+        loginButton.setTextColor(Color.WHITE);
+        loginButton.setTextSize(16);
+        loginButton.setTypeface(null,android.graphics.Typeface.BOLD);
+        GradientDrawable primary=new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,
+                new int[]{Color.rgb(0,101,220),Color.rgb(5,180,227)});
+        primary.setCornerRadius(dp(13));
+        loginButton.setBackground(primary);
+        card.addView(loginButton,new LinearLayout.LayoutParams(-1,dp(54)));
+
+        Button registerButton=new Button(this);
+        registerButton.setText("ĐĂNG KÝ TÀI KHOẢN");
+        registerButton.setAllCaps(false);
+        registerButton.setTextSize(14);
+        registerButton.setTextColor(Color.rgb(0,102,182));
+        registerButton.setBackground(loginBackground(Color.WHITE,13,Color.rgb(204,224,236)));
+        LinearLayout.LayoutParams registerParams=new LinearLayout.LayoutParams(-1,dp(49));
+        registerParams.topMargin=dp(10);
+        card.addView(registerButton,registerParams);
+
+        TextView info=loginLabel("Xác thực tài khoản một lần để sử dụng nội dung ngoại tuyến. Mật khẩu không lưu trên thiết bị.",12,muted,false);
+        info.setGravity(android.view.Gravity.CENTER);
+        info.setPadding(0,dp(16),0,0);
+        card.addView(info,new LinearLayout.LayoutParams(-1,-2));
+
+        AlertDialog dialog=new AlertDialog.Builder(this).setView(scene).setCancelable(false).create();
+        loginDialog=dialog;
+        registerButton.setOnClickListener(v->openExternal(Uri.parse(REGISTER_URL)));
+        loginButton.setOnClickListener(v->{
+            String login=loginField.getText().toString().trim();
+            String password=passwordField.getText().toString();
+            if(login.isEmpty()||password.isEmpty()){
+                status.setText("Vui lòng nhập đầy đủ tài khoản và mật khẩu.");
+                return;
+            }
+            status.setText("Đang xác thực…");
+            status.setTextColor(Color.rgb(43,101,112));
+            loginButton.setEnabled(false);registerButton.setEnabled(false);
+            loginField.setEnabled(false);passwordField.setEnabled(false);
+            authenticateCredentials(login,password,dialog,loginButton,registerButton,loginField,passwordField,status);
         });
         dialog.show();
+        if(dialog.getWindow()!=null){
+            dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
+            dialog.getWindow().setLayout(-1,-1);
+            dialog.getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        }
     }
 
     private void authenticateCredentials(String login, String password, AlertDialog dialog,

@@ -5,7 +5,8 @@
 
     <application
         android:allowBackup="false"
-        android:icon="@drawable/app_icon"
+        android:icon="@drawable/abg_brand"
+        android:roundIcon="@drawable/abg_brand"
         android:label="Khí Máu"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
