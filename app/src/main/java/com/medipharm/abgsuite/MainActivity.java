@@ -111,7 +111,7 @@ public final class MainActivity extends Activity {
         if (!localRuntime || webView == null) return;
         if (!"home".equals(target) && !"analysis".equals(target) && !"cases".equals(target) && !"theory".equals(target)) return;
         webView.evaluateJavascript("(function(){var b=document.querySelector('.nah-abg__mobile-dock [data-home-workspace=\\\"" + target + "\\\"]');if(b)b.click();})();",null);
-        if (nativeDock != null) nativeDock.evaluateJavascript("(function(){document.querySelectorAll('[data-target]').forEach(function(a){a.classList.toggle('active',a.getAttribute('data-target')==='"+'" + target + "'+"');});})();",null);
+        if (nativeDock != null) nativeDock.evaluateJavascript("(function(){document.querySelectorAll('[data-target]').forEach(function(a){a.classList.toggle('active',a.getAttribute('data-target')==='" + target + "');});})();", null);
     }
 
 
