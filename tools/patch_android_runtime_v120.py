@@ -22,8 +22,8 @@ for key in ('nah-abg.css','runtime_html'):
         raw=(raw+'\n'+css) if key=='nah-abg.css' else raw.replace('</head>','<style>'+css+'</style></head>',1)
     b=raw.encode()
     assert db.execute('update runtime_assets set content=?,sha256=? where key=?',(b,hashlib.sha256(b).hexdigest(),key)).rowcount==1
-db.execute("insert or replace into app_meta values('app_version','1.2.1')")
-db.execute("insert or replace into app_meta values('data_version','ABG-WEB-6.11.4-ANDR-1.2.1')")
+db.execute("insert or replace into app_meta values('app_version','1.2.2')")
+db.execute("insert or replace into app_meta values('data_version','ABG-WEB-6.11.4-ANDR-1.2.2')")
 assert db.execute('pragma integrity_check').fetchone()[0]=='ok'
 db.commit()
 print('ANDROID_RUNTIME_V120_PATCH_OK')

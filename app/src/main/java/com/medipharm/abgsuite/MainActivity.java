@@ -314,8 +314,13 @@ public final class MainActivity extends Activity {
         android.widget.ImageView logo = new android.widget.ImageView(this);
         logo.setImageResource(R.drawable.abg_brand);
         logo.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
-        LinearLayout.LayoutParams logoParams=new LinearLayout.LayoutParams(dp(132),dp(132));
+        logo.setBackground(loginBackground(Color.WHITE,26,Color.rgb(213,227,239)));
+        logo.setPadding(dp(6),dp(6),dp(6),dp(6));
+        logo.setClipToOutline(true);
+        logo.setElevation(dp(5));
+        LinearLayout.LayoutParams logoParams=new LinearLayout.LayoutParams(dp(142),dp(142));
         logoParams.gravity=android.view.Gravity.CENTER_HORIZONTAL;
+        logoParams.bottomMargin=dp(6);
         card.addView(logo,logoParams);
 
         TextView brand=loginLabel("MEDIPHARM ABG",24,Color.rgb(0,101,177),true);
@@ -505,7 +510,8 @@ public final class MainActivity extends Activity {
                     webView.loadDataWithBaseURL(LOCAL_BASE, html, "text/html", "UTF-8", null);
                 });
             } catch (Exception e) {
-                mainHandler.post(() -> showFatalLocalError("Không đọc được dữ liệu ngoại tuyến. Hãy cài lại bản Khí Máu mới nhất."));
+                android.util.Log.e("MEDIPHARM_ABG", "Offline HTML load failed", e);
+                mainHandler.post(() -> showFatalLocalError("Không thể đọc dữ liệu ngoại tuyến. Hãy mở lại ứng dụng hoặc cập nhật bản mới."));
             }
         });
     }
@@ -533,12 +539,44 @@ public final class MainActivity extends Activity {
         dataVersion = readMeta(target, "data_version");
     }
 
+    // Reading the entire >2MB HTML blob exceeds Android's SQLite CursorWindow.
+    // SQLite substr(blob, offset, length) permits bounded 64-KiB cursor rows.
     private String readRuntimeHtml() throws Exception {
         File dbFile = new File(new File(getFilesDir(), "offline"), DB_FILE);
         SQLiteDatabase db = SQLiteDatabase.openDatabase(dbFile.getAbsolutePath(), null, SQLiteDatabase.OPEN_READONLY);
-        try (Cursor cursor = db.rawQuery("SELECT content FROM runtime_assets WHERE key=?", new String[]{"runtime_html"})) {
-            if (!cursor.moveToFirst()) throw new IllegalStateException("runtime missing");
-            return new String(cursor.getBlob(0), StandardCharsets.UTF_8);
+        try {
+            int size;
+            String expectedSha;
+            try (Cursor meta = db.rawQuery(
+                    "SELECT length(content),sha256 FROM runtime_assets WHERE key=?",
+                    new String[]{"runtime_html"})) {
+                if (!meta.moveToFirst()) throw new IllegalStateException("offline runtime missing");
+                size = meta.getInt(0);
+                expectedSha = meta.getString(1);
+            }
+            if (size < 100 || size > 64 * 1024 * 1024)
+                throw new IllegalStateException("offline runtime has invalid size: " + size);
+            final int chunk = 64 * 1024;
+            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream(size);
+            java.security.MessageDigest sha = java.security.MessageDigest.getInstance("SHA-256");
+            for (int start = 1; start <= size; start += chunk) {
+                try (Cursor c = db.rawQuery(
+                        "SELECT substr(content,?,?) FROM runtime_assets WHERE key=?",
+                        new String[]{String.valueOf(start),String.valueOf(chunk),"runtime_html"})) {
+                    if (!c.moveToFirst()) throw new IllegalStateException("offline HTML chunk missing");
+                    byte[] part = c.getBlob(0);
+                    if (part == null || part.length == 0)
+                        throw new IllegalStateException("offline HTML chunk empty");
+                    out.write(part);
+                    sha.update(part);
+                }
+            }
+            if (out.size() != size) throw new IllegalStateException("offline HTML truncated");
+            StringBuilder digest = new StringBuilder(64);
+            for (byte b : sha.digest()) digest.append(String.format(Locale.ROOT,"%02x",b & 0xff));
+            if (!digest.toString().equalsIgnoreCase(expectedSha))
+                throw new IllegalStateException("offline HTML SHA-256 mismatch");
+            return new String(out.toByteArray(), StandardCharsets.UTF_8);
         } finally {
             db.close();
         }

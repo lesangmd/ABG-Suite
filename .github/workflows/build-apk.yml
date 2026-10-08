@@ -1,4 +1,4 @@
-name: Build MEDIPHARM ABG Android v1.2.1
+name: Build MEDIPHARM ABG Android v1.2.2
 
 on:
   push:
@@ -36,7 +36,7 @@ jobs:
           expected=$(unzip -p "$archive" offline/abg_offline_v122.db.sha256 | awk '{print $1}')
           echo "$expected  app/src/main/assets/abg_offline.db" | sha256sum -c -
           python3 tools/patch_android_runtime_v120.py app/src/main/assets/abg_offline.db
-          python3 -c "import sqlite3; d=sqlite3.connect('app/src/main/assets/abg_offline.db'); m=dict(d.execute('select key,value from app_meta')); assert m['web_source_version']=='6.11.4' and m['app_version']=='1.2.1',m"
+          python3 -c "import sqlite3; d=sqlite3.connect('app/src/main/assets/abg_offline.db'); m=dict(d.execute('select key,value from app_meta')); assert m['web_source_version']=='6.11.4' and m['app_version']=='1.2.2',m"
       - name: Install Android SDK packages
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
@@ -59,8 +59,8 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: MEDIPHARM-ABG-v1.2.1-UNSIGNED-QA
-          path: out/MEDIPHARM-ABG-v1.2.1-aligned-unsigned.apk
+          name: MEDIPHARM-ABG-v1.2.2-UNSIGNED-QA
+          path: out/MEDIPHARM-ABG-v1.2.2-aligned-unsigned.apk
           if-no-files-found: error
           retention-days: 7
 
@@ -83,19 +83,19 @@ jobs:
           KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -euo pipefail
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign --ks "$RUNNER_TEMP/release.jks" --ks-type PKCS12 --ks-key-alias "$KEY_ALIAS" --ks-pass 'env:STORE_PASS' --key-pass 'env:KEY_PASS' --out out/MEDIPHARM-ABG-v1.2.1.apk out/MEDIPHARM-ABG-v1.2.1-aligned-unsigned.apk
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs out/MEDIPHARM-ABG-v1.2.1.apk | tee out/signing-verification.txt
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign --ks "$RUNNER_TEMP/release.jks" --ks-type PKCS12 --ks-key-alias "$KEY_ALIAS" --ks-pass 'env:STORE_PASS' --key-pass 'env:KEY_PASS' --out out/MEDIPHARM-ABG-v1.2.2.apk out/MEDIPHARM-ABG-v1.2.2-aligned-unsigned.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs out/MEDIPHARM-ABG-v1.2.2.apk | tee out/signing-verification.txt
           actual=$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' out/signing-verification.txt | head -n1 | tr '[:upper:]' '[:lower:]')
           test "$actual" = "$PRODUCTION_CERT_SHA256" || { echo "BLOCKED: signer $actual does not match fixed v1.2.1 certificate"; exit 1; }
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging out/MEDIPHARM-ABG-v1.2.1.apk | grep -q "package: name='com.medipharm.abgsuite' versionCode='8' versionName='1.2.0'"
-          sha256sum out/MEDIPHARM-ABG-v1.2.1.apk > out/MEDIPHARM-ABG-v1.2.1.apk.sha256
-          rm -f "$RUNNER_TEMP/release.jks" out/MEDIPHARM-ABG-v1.2.1-aligned-unsigned.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging out/MEDIPHARM-ABG-v1.2.2.apk | grep -q "package: name='com.medipharm.abgsuite' versionCode='9' versionName='1.2.2'"
+          sha256sum out/MEDIPHARM-ABG-v1.2.2.apk > out/MEDIPHARM-ABG-v1.2.2.apk.sha256
+          rm -f "$RUNNER_TEMP/release.jks" out/MEDIPHARM-ABG-v1.2.2-aligned-unsigned.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: MEDIPHARM-ABG-v1.2.1-SIGNED
+          name: MEDIPHARM-ABG-v1.2.2-SIGNED
           path: |
-            out/MEDIPHARM-ABG-v1.2.1.apk
-            out/MEDIPHARM-ABG-v1.2.1.apk.sha256
+            out/MEDIPHARM-ABG-v1.2.2.apk
+            out/MEDIPHARM-ABG-v1.2.2.apk.sha256
             out/signing-verification.txt
           if-no-files-found: error
           retention-days: 7
