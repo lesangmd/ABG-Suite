@@ -83,6 +83,38 @@ public final class MainActivity extends Activity {
     private boolean localRuntime;
     private String dataVersion = "";
     private AlertDialog loginDialog;
+    // This Android-owned dock is independent of the scrolling clinical WebView.
+    private WebView nativeDock;
+    private void createNativeDock(LinearLayout shell) {
+        nativeDock = new WebView(this);
+        nativeDock.setBackgroundColor(Color.WHITE);
+        nativeDock.setVerticalScrollBarEnabled(false);
+        nativeDock.getSettings().setJavaScriptEnabled(true);
+        nativeDock.getSettings().setDomStorageEnabled(false);
+        nativeDock.getSettings().setAllowFileAccess(false);
+        nativeDock.getSettings().setAllowContentAccess(false);
+        nativeDock.setWebViewClient(new WebViewClient() {
+            @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                Uri u = request.getUrl();
+                if ("medipharmabg".equals(u.getScheme()) && "navigate".equals(u.getHost())) {
+                    navigateNativeDock(u.getQueryParameter("workspace"));
+                }
+                return true;
+            }
+        });
+        shell.addView(nativeDock, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(70)));
+        nativeDock.setVisibility(View.GONE);
+        nativeDock.loadDataWithBaseURL(LOCAL_BASE, "<!doctype html><html lang=\"vi\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><style>*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;font-family:Arial,sans-serif;background:#fff}nav{height:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:4px 6px;border-top:1px solid #d8e6ee;gap:3px}a{display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center;min-width:0;text-decoration:none;border-radius:12px;font-size:clamp(10px,2.3vw,12px);font-weight:650;color:#637d91;-webkit-tap-highlight-color:transparent}a.active{background:#e9f4ff;color:#0874cc}svg{height:23px;width:23px;flex-shrink:0}span{white-space:nowrap;overflow:hidden;max-width:100%;text-overflow:ellipsis} @media(max-width:340px){nav{padding-inline:2px}a{font-size:10px}svg{width:21px;height:21px}}</style></head><body><nav><a data-target=\"home\" href=\"medipharmabg://navigate?workspace=home\" class=\"active\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 11.5 12 4l9 7.5V21h-6v-6H9v6H3z\"/></svg><span>Trang chủ</span></a><a data-target=\"analysis\" href=\"medipharmabg://navigate?workspace=analysis\" class=\"\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"5\" y=\"3\" width=\"14\" height=\"18\" rx=\"2\"/><path d=\"M9 8h6M9 12h6M9 16h4\"/></svg><span>Phân tích</span></a><a data-target=\"cases\" href=\"medipharmabg://navigate?workspace=cases\" class=\"\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 3v5a3 3 0 0 0 6 0V3M12 11v2a5 5 0 0 0 5 5h1\"/><circle cx=\"19\" cy=\"18\" r=\"2\"/></svg><span>Ca lâm sàng</span></a><a data-target=\"theory\" href=\"medipharmabg://navigate?workspace=theory\" class=\"\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 5.5A3.5 3.5 0 0 1 7.5 2H11v18H7.5A3.5 3.5 0 0 0 4 23zM20 5.5A3.5 3.5 0 0 0 16.5 2H13v18h3.5A3.5 3.5 0 0 1 20 23z\"/></svg><span>Học tập</span></a></nav></body></html>", "text/html", "UTF-8", null);
+    }
+
+    private void navigateNativeDock(String target) {
+        if (!localRuntime || webView == null) return;
+        if (!"home".equals(target) && !"analysis".equals(target) && !"cases".equals(target) && !"theory".equals(target)) return;
+        webView.evaluateJavascript("(function(){var b=document.querySelector('.nah-abg__mobile-dock [data-home-workspace=\\\"" + target + "\\\"]');if(b)b.click();})();",null);
+        if (nativeDock != null) nativeDock.evaluateJavascript("(function(){document.querySelectorAll('[data-target]').forEach(function(a){a.classList.toggle('active',a.getAttribute('data-target')==='"+'" + target + "'+"');});})();",null);
+    }
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,12 +122,11 @@ public final class MainActivity extends Activity {
         getWindow().setStatusBarColor(Color.rgb(11, 102, 116));
         getWindow().setNavigationBarColor(Color.rgb(243, 247, 249));
 
-        FrameLayout root = new FrameLayout(this);
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
         webView = new WebView(this);
-        root.addView(webView, new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
-        ));
+        root.addView(webView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f));
+        createNativeDock(root);
         setContentView(root);
         configureWebView();
 
@@ -195,6 +226,7 @@ public final class MainActivity extends Activity {
 
     private void showNativeLogin(String initialMessage) {
         localRuntime = false;
+        if (nativeDock != null) nativeDock.setVisibility(View.GONE);
         if (loginDialog != null && loginDialog.isShowing()) {
             loginDialog.dismiss();
         }
@@ -349,6 +381,7 @@ public final class MainActivity extends Activity {
                 String html = readRuntimeHtml();
                 mainHandler.post(() -> {
                     localRuntime = true;
+                    if (nativeDock != null) nativeDock.setVisibility(View.VISIBLE);
                     webView.clearHistory();
                     webView.loadDataWithBaseURL(LOCAL_BASE, html, "text/html", "UTF-8", null);
                 });
@@ -490,6 +523,7 @@ public final class MainActivity extends Activity {
 
     private void showFatalLocalError(String message) {
         localRuntime = false;
+        if (nativeDock != null) nativeDock.setVisibility(View.GONE);
         String safe = message.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
         webView.loadDataWithBaseURL(LOCAL_BASE,
                 "<!doctype html><html><head><meta name='viewport' content='width=device-width,initial-scale=1'></head>" +
@@ -606,6 +640,12 @@ public final class MainActivity extends Activity {
         if (loginDialog != null && loginDialog.isShowing()) loginDialog.dismiss();
         mainHandler.removeCallbacksAndMessages(null);
         executor.shutdownNow();
+        if (nativeDock != null) {
+            nativeDock.stopLoading();
+            nativeDock.setWebViewClient(null);
+            nativeDock.destroy();
+            nativeDock = null;
+        }
         if (webView != null) {
             webView.stopLoading();
             webView.setWebChromeClient(null);

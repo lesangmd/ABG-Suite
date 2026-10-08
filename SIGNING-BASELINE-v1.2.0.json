@@ -1,0 +1,9 @@
+{
+  "applicationId": "com.medipharm.abgsuite",
+  "versionName": "1.2.0",
+  "versionCode": 7,
+  "certificateSha256": "b379ab8e88190569072c998e0ff40f3da7de95554430d214d2e15bb3ba888cc9",
+  "webappBaseline": "6.11.4",
+  "signingEpoch": "new signing key from 1.2.0",
+  "notes": "New installation required. Keep private key out of public GitHub; add via Actions secrets."
+}
