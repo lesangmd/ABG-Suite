@@ -14,7 +14,7 @@ jobs:
     env:
       ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-      PRODUCTION_CERT_SHA256: 'b379ab8e88190569072c998e0ff40f3da7de95554430d214d2e15bb3ba888cc9'
+      PRODUCTION_CERT_SHA256: 'bdce73416f223b0bcedf6b8bf6f19da191c8667b9822c0db45674c4fed112fea'
     steps:
       - uses: actions/checkout@v4
 
@@ -65,7 +65,7 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-      - name: Require unchanged production signing key
+      - name: Require v1.3.0 signing baseline secrets
         env:
           KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -77,7 +77,7 @@ jobs:
           printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
           chmod 600 "$RUNNER_TEMP/release.jks"
 
-      - name: Sign and verify APK with unchanged production key
+      - name: Sign and verify APK with v1.3.0 signing baseline
         env:
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           STORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
