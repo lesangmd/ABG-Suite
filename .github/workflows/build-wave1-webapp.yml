@@ -3,7 +3,6 @@ name: Build Wave 1 WebApp RC
 on:
   push:
     branches: [ visual-v2-webapp-shell ]
-  workflow_dispatch:
 
 permissions:
   contents: read
