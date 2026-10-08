@@ -1,0 +1,17 @@
+/* MEDIPHARM Khí Máu — Brand + Visual Baseline v2 tokens */
+:root{
+ --abg-primary:#2563EB;--abg-secondary:#0EA5E9;--abg-accent:#EF4444;
+ --abg-success:#10B981;--abg-warning:#F59E0B;--abg-ink:#0F2942;
+ --abg-muted:#64748B;--abg-surface:#FFFFFF;--abg-bg:#F8FAFC;--abg-border:#DCE7EF;
+ --abg-analysis:#2563EB;--abg-case:#EF4444;--abg-practice:#10B981;--abg-dictionary:#7C5CE7;
+ --abg-radius-sm:12px;--abg-radius-md:18px;--abg-radius-lg:28px;
+ --abg-shadow:0 8px 28px rgba(15,41,66,.08);
+ --abg-dock-h:72px;
+}
+@media (prefers-color-scheme:dark){:root{
+ --abg-ink:#EAF2F8;--abg-muted:#9FB1C1;--abg-surface:#122235;--abg-bg:#091522;--abg-border:#263B50;
+}}
+.abg-v2-shell{width:100%;max-width:none;min-width:0;background:var(--abg-bg);color:var(--abg-ink);overflow-x:clip}
+.abg-v2-scroll{min-width:0;padding-bottom:calc(var(--abg-dock-h) + env(safe-area-inset-bottom,0px))}
+.abg-v2-dock{position:fixed;z-index:60;left:0;right:0;bottom:0;height:calc(var(--abg-dock-h) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);background:var(--abg-surface);border-top:1px solid var(--abg-border)}
+@media(min-width:1200px){.abg-v2-dock{position:sticky;bottom:auto;height:auto;padding-bottom:0}}
