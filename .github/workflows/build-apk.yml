@@ -36,7 +36,7 @@ jobs:
           expected=$(unzip -p "$archive" offline/abg_offline_v122.db.sha256 | awk '{print $1}')
           echo "$expected  app/src/main/assets/abg_offline.db" | sha256sum -c -
           python3 tools/patch_android_runtime_v120.py app/src/main/assets/abg_offline.db
-          python3 -c "import sqlite3; d=sqlite3.connect('app/src/main/assets/abg_offline.db'); m=dict(d.execute('select key,value from app_meta')); assert m['web_source_version']=='6.11.4' and m['app_version']=='1.2.0',m"
+          python3 -c "import sqlite3; d=sqlite3.connect('app/src/main/assets/abg_offline.db'); m=dict(d.execute('select key,value from app_meta')); assert m['web_source_version']=='6.11.4' and m['app_version']=='1.2.1',m"
       - name: Install Android SDK packages
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
