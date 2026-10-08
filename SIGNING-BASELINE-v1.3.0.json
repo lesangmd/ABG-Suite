@@ -1,0 +1,18 @@
+{
+  "applicationId": "com.medipharm.abgsuite",
+  "versionName": "1.3.0",
+  "versionCode": 10,
+  "signingEpoch": "NEW-SIGNING-BASELINE-v1.3.0",
+  "signingCertificateSha256": "bdce73416f223b0bcedf6b8bf6f19da191c8667b9822c0db45674c4fed112fea",
+  "certificateAlgorithm": "RSA-4096-SHA256",
+  "keystoreFormat": "PKCS12",
+  "oldSigningCertificateSha256": "b379ab8e88190569072c998e0ff40f3da7de95554430d214d2e15bb3ba888cc9",
+  "updateCompatibility": {
+    "fromV122": "FRESH_INSTALL_REQUIRED",
+    "withinV130AndLater": "SAME_SIGNING_CERTIFICATE_REQUIRED"
+  },
+  "webappVisualContract": "6.11.7",
+  "bundledOfflineContentBaseline": "6.11.4",
+  "signingPolicy": "Only sign using ANDROID_KEYSTORE_B64, ANDROID_KEY_ALIAS, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_PASSWORD as private Actions secrets; fingerprint must match lock.",
+  "keyBackup": "Private key and password are not stored in this public repo. Secure backup exists outside GitHub."
+}
