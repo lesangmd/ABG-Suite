@@ -27,7 +27,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p app/src/main/assets out
-          archive='MEDIPHARM-ABG-Android-v1.2.0-WebApp-v6.11.4-v1.1.0-SIGNING-LOCK-SOURCE (1).zip'
+          archive='MEDIPHARM-ABG-Android-v1.2.2-WebApp-v6.11.4-v1.1.0-SIGNING-LOCK-SOURCE (1).zip'
           echo 'b995cbc5e09b1d03074045225b797ba859de03364fb66612e4640c142412e350  '"$archive" | sha256sum -c -
           unzip -p "$archive" offline/abg_offline_v122.db.xz.b64 | base64 -d | xz -dc > app/src/main/assets/abg_offline.db
           expected=$(unzip -p "$archive" offline/abg_offline_v122.db.sha256 | awk '{print $1}')
