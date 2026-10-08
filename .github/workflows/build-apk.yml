@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build MEDIPHARM ABG Android v1.2.2
 
 on:
   push:
@@ -14,6 +14,7 @@ jobs:
     env:
       ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      PRODUCTION_CERT_SHA256: '47826c56a86d6253f2b7419630c0f19ddc334392eebeec1da543cd3de97686ac'
     steps:
       - uses: actions/checkout@v4
 
@@ -22,14 +23,16 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Restore offline SQLite payload
+      - name: Restore v6.11.4 offline database from verified source ZIP
         run: |
+          set -euo pipefail
           mkdir -p app/src/main/assets out
-          base64 -d offline/abg_offline_v120.db.xz.b64 | xz -dc > app/src/main/assets/abg_offline.db
-          echo "a4b6d2ba5f87ee90bdca9f0023145587bac42d6dfcb206ac83eaa5c4f8b18266  app/src/main/assets/abg_offline.db" | sha256sum -c -
-          sha256sum app/src/main/assets/abg_offline.db | tee out/abg_offline.db.sha256
-          cp app/src/main/assets/abg_offline.db out/abg_offline.db
-
+          archive='MEDIPHARM-ABG-Android-v1.2.2-WebApp-v6.11.4-v1.1.0-SIGNING-LOCK-SOURCE (1).zip'
+          echo 'b995cbc5e09b1d03074045225b797ba859de03364fb66612e4640c142412e350  '"$archive" | sha256sum -c -
+          unzip -p "$archive" offline/abg_offline_v122.db.xz.b64 | base64 -d | xz -dc > app/src/main/assets/abg_offline.db
+          expected=$(unzip -p "$archive" offline/abg_offline_v122.db.sha256 | awk '{print $1}')
+          echo "$expected  app/src/main/assets/abg_offline.db" | sha256sum -c -
+          python3 -c "import sqlite3; d=sqlite3.connect('app/src/main/assets/abg_offline.db'); m=dict(d.execute('select key,value from app_meta')); assert m['web_source_version']=='6.11.4',m; assert d.execute('pragma integrity_check').fetchone()[0]=='ok'"
       - name: Install Android SDK packages
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
@@ -50,13 +53,38 @@ jobs:
           "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -v 4 \
             "out/MEDIPHARM-ABG-v${VERSION_NAME}-aligned-unsigned.apk"
 
-      - name: Collect signing tool
+      - name: Require canonical v1.1.0 signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          STORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" out/apksigner.jar
+          set -euo pipefail
+          test -n "$KEYSTORE_B64" && test -n "$KEY_ALIAS" && test -n "$STORE_PASS" && test -n "$KEY_PASS" || { echo 'BLOCKED: missing production signing secrets'; exit 1; }
+          printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          chmod 600 "$RUNNER_TEMP/release.jks"
 
+      - name: Sign and verify APK for in-place update from v1.1.0
+        env:
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          STORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign --ks "$RUNNER_TEMP/release.jks" --ks-key-alias "$KEY_ALIAS" --ks-pass 'env:STORE_PASS' --key-pass 'env:KEY_PASS' --out out/MEDIPHARM-ABG-v1.2.2.apk out/MEDIPHARM-ABG-v1.2.2-aligned-unsigned.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs out/MEDIPHARM-ABG-v1.2.2.apk | tee out/signing-verification.txt
+          actual=$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' out/signing-verification.txt | head -n1 | tr '[:upper:]' '[:lower:]')
+          test "$actual" = "$PRODUCTION_CERT_SHA256" || { echo "BLOCKED: signer $actual does not match installed v1.1.0 certificate"; exit 1; }
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging out/MEDIPHARM-ABG-v1.2.2.apk | grep -q "package: name='com.medipharm.abgsuite' versionCode='6' versionName='1.2.2'"
+          sha256sum out/MEDIPHARM-ABG-v1.2.2.apk > out/MEDIPHARM-ABG-v1.2.2.apk.sha256
+          rm -f "$RUNNER_TEMP/release.jks" out/MEDIPHARM-ABG-v1.2.2-aligned-unsigned.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: medipharm-abg-android-build
-          path: out/
+          name: MEDIPHARM-ABG-v1.2.2-SIGNED
+          path: |
+            out/MEDIPHARM-ABG-v1.2.2.apk
+            out/MEDIPHARM-ABG-v1.2.2.apk.sha256
+            out/signing-verification.txt
           if-no-files-found: error
           retention-days: 7
